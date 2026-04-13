@@ -874,77 +874,76 @@ function initGiftConfig() {
 /* ───────────────────────────────────────────────────────
    SUPABASE AUTHENTICATION
 ─────────────────────────────────────────────────────── */
-let isSignUpMode = false;
+  // (Sitting inside the main DOMContentLoaded block)
+  let isSignUpMode = false;
 
-document.addEventListener('DOMContentLoaded', () => {
-  if (typeof supabase === 'undefined') return;
+  if (typeof supabase !== 'undefined') {
+    const loginOverlay = document.getElementById('login-overlay');
+    const loginForm = document.getElementById('admin-login-form');
+    const loginToggle = document.getElementById('login-toggle-mode');
+    const loginTitle = document.getElementById('login-title');
+    const loginBtn = document.getElementById('login-submit-btn');
 
-  const loginOverlay = document.getElementById('login-overlay');
-  const loginForm = document.getElementById('admin-login-form');
-  const loginToggle = document.getElementById('login-toggle-mode');
-  const loginTitle = document.getElementById('login-title');
-  const loginBtn = document.getElementById('login-submit-btn');
-
-  // Check current session
-  supabase.auth.getSession().then(({ data: { session } }) => {
-    if (session) {
-      if (loginOverlay) loginOverlay.classList.add('hidden');
-    } else {
-      if (loginOverlay) loginOverlay.classList.remove('hidden');
-    }
-  });
-
-  supabase.auth.onAuthStateChange((event, session) => {
-    if (session) {
-      if (loginOverlay) loginOverlay.classList.add('hidden');
-    } else {
-      if (loginOverlay) loginOverlay.classList.remove('hidden');
-    }
-  });
-
-  if (loginToggle) {
-    loginToggle.addEventListener('click', () => {
-      isSignUpMode = !isSignUpMode;
-      if (isSignUpMode) {
-        loginTitle.textContent = '📝 Daftar Admin Baru';
-        loginBtn.textContent = 'Sign Up';
-        loginToggle.innerHTML = 'Sudah punya akun? <span>Login di sini</span>';
+    // Check current session
+    supabase.auth.getSession().then(({ data: { session } }) => {
+      if (session) {
+        if (loginOverlay) loginOverlay.classList.add('hidden');
       } else {
-        loginTitle.textContent = '🔒 Login Admin';
-        loginBtn.textContent = 'Login';
-        loginToggle.innerHTML = 'Belum punya akun? <span>Daftar / Sign Up</span>';
+        if (loginOverlay) loginOverlay.classList.remove('hidden');
       }
     });
-  }
 
-  if (loginForm) {
-    loginForm.addEventListener('submit', async (e) => {
-      e.preventDefault();
-      const email = document.getElementById('login-email').value;
-      const password = document.getElementById('login-password').value;
-      
-      loginBtn.disabled = true;
-      loginBtn.textContent = 'Loading...';
+    supabase.auth.onAuthStateChange((event, session) => {
+      if (session) {
+        if (loginOverlay) loginOverlay.classList.add('hidden');
+      } else {
+        if (loginOverlay) loginOverlay.classList.remove('hidden');
+      }
+    });
 
-      if (isSignUpMode) {
-        const { error } = await supabase.auth.signUp({ email, password });
-        if (error) {
-          alert('Error Sign Up: ' + error.message);
+    if (loginToggle) {
+      loginToggle.addEventListener('click', () => {
+        isSignUpMode = !isSignUpMode;
+        if (isSignUpMode) {
+          loginTitle.textContent = '📝 Daftar Admin Baru';
+          loginBtn.textContent = 'Sign Up';
+          loginToggle.innerHTML = 'Sudah punya akun? <span>Login di sini</span>';
         } else {
-          alert('Pendaftaran berhasil! Jika perlu verifikasi email, silakan cek email Anda. Jika tidak, Anda akan langsung login.');
+          loginTitle.textContent = '🔒 Login Admin';
+          loginBtn.textContent = 'Login';
+          loginToggle.innerHTML = 'Belum punya akun? <span>Daftar / Sign Up</span>';
         }
-      } else {
-        const { error } = await supabase.auth.signInWithPassword({ email, password });
-        if (error) {
-          alert('Error Login: ' + error.message);
+      });
+    }
+
+    if (loginForm) {
+      loginForm.addEventListener('submit', async (e) => {
+        e.preventDefault();
+        const email = document.getElementById('login-email').value;
+        const password = document.getElementById('login-password').value;
+        
+        loginBtn.disabled = true;
+        loginBtn.textContent = 'Loading...';
+
+        if (isSignUpMode) {
+          const { error } = await supabase.auth.signUp({ email, password });
+          if (error) {
+            alert('Error Sign Up: ' + error.message);
+          } else {
+            alert('Pendaftaran berhasil! Jika perlu verifikasi email, silakan cek email Anda. Jika tidak, Anda akan langsung login.');
+          }
+        } else {
+          const { error } = await supabase.auth.signInWithPassword({ email, password });
+          if (error) {
+            alert('Error Login: ' + error.message);
+          }
         }
-      }
-      
-      loginBtn.disabled = false;
-      loginBtn.textContent = isSignUpMode ? 'Sign Up' : 'Login';
-    });
+        
+        loginBtn.disabled = false;
+        loginBtn.textContent = isSignUpMode ? 'Sign Up' : 'Login';
+      });
+    }
   }
-});
 
   // 3. Wire up helpers
   initSaveBar();
