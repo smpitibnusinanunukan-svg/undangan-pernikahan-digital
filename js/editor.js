@@ -614,15 +614,54 @@ function initSettingsTab() {
   const autoplay  = document.getElementById('settings-music-autoplay');
 
   if (fileInput) {
-    fileInput.addEventListener('change', () => {
+    fileInput.addEventListener('change', async () => {
       const file = fileInput.files[0];
       if (!file) return;
-      filename.textContent = file.name;
+      filename.textContent = file.name + ' (mengupload...)';
+
+      // Try Supabase Storage first (avoids localStorage quota)
+      if (window.sb) {
+        try {
+          const path = `music/${Date.now()}_${file.name}`;
+          const { data, error } = await window.sb.storage
+            .from('wedding-assets')
+            .upload(path, file, { upsert: true, contentType: file.type });
+
+          if (!error) {
+            const { data: urlData } = window.sb.storage
+              .from('wedding-assets')
+              .getPublicUrl(path);
+            const publicUrl = urlData.publicUrl;
+            localStorage.setItem('wi_music_src', publicUrl);
+            localStorage.setItem('wi_music_type', file.type);
+            filename.textContent = file.name + ' ✅';
+            showToast('Musik berhasil diupload ke Cloud! 🎵', 'success');
+            return;
+          } else {
+            console.warn('Supabase Storage error, falling back:', error.message);
+          }
+        } catch (err) {
+          console.warn('Storage upload failed, trying local fallback:', err);
+        }
+      }
+
+      // Fallback: warn user file may be too large
+      if (file.size > 2 * 1024 * 1024) { // 2MB limit for localStorage
+        showToast('File terlalu besar (>2MB) untuk disimpan lokal. Hubungkan Supabase Storage terlebih dahulu.', 'error');
+        filename.textContent = 'File terlalu besar!';
+        return;
+      }
       const reader = new FileReader();
       reader.onload = e => {
-        localStorage.setItem('wi_music_src', e.target.result);
-        localStorage.setItem('wi_music_type', file.type);
-        showToast('Musik berhasil diganti! ✨', 'success');
+        try {
+          localStorage.setItem('wi_music_src', e.target.result);
+          localStorage.setItem('wi_music_type', file.type);
+          filename.textContent = file.name + ' ✅';
+          showToast('Musik berhasil diganti! ✨', 'success');
+        } catch (storageErr) {
+          showToast('File terlalu besar! Silakan gunakan file MP3 yang lebih kecil (<2MB).', 'error');
+          filename.textContent = 'Gagal — file terlalu besar!';
+        }
       };
       reader.readAsDataURL(file);
     });
