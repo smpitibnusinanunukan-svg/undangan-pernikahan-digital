@@ -30,7 +30,6 @@ function getStoreVal(lsKey, configKey) {
 function loadSettings() {
   // Theme colors
   const colors = getStoreObj('wi_colors', 'colors');
-  const colors = getStoreObj('wi_colors', 'colors');
   Object.entries(colors).forEach(([k, v]) => {
     document.documentElement.style.setProperty(k, v);
   });
@@ -56,7 +55,7 @@ function loadSettings() {
   const cdate = getStoreVal('wi_countdown_date', 'countdown_date');
   if (cdate) STATE.countdownTarget = new Date(cdate);
 
-  // Wishes
+  // Wishes will be loaded via Supabase if available, otherwise fallback:
   STATE.wishes = JSON.parse(localStorage.getItem('wi_wishes') || '[]');
 
   // Sync duplicate name elements
@@ -116,7 +115,7 @@ function loadGuestName() {
 
 // ─── Background Settings Loader ──────────────────────────
 function loadBackground() {
-  const bg = getStoreObj('wi_background', 'bg');
+  const bg = getStoreObj('wi_background', 'bg_main');
   if (!Object.keys(bg).length) return;
 
   const body = document.body;
@@ -372,14 +371,29 @@ function initRSVP() {
   const form = document.getElementById('rsvp-form');
   if (!form) return;
 
-  form.addEventListener('submit', (e) => {
+  form.addEventListener('submit', async (e) => {
     e.preventDefault();
     const name    = document.getElementById('rsvp-name').value;
     const attend  = document.getElementById('rsvp-attend').value;
     const message = document.getElementById('rsvp-message').value;
+    const submitBtn = form.querySelector('button[type="submit"]');
 
     if (!name.trim()) return;
 
+    if (submitBtn) { submitBtn.disabled = true; submitBtn.textContent = 'Mengirim...'; }
+
+    const wishData = { guest_name: name, attend: attend, message: message };
+    
+    // Save to Supabase if available
+    let success = false;
+    if (typeof supabase !== 'undefined') {
+      try {
+        const { error } = await supabase.from('wishes').insert([wishData]);
+        if (!error) success = true;
+      } catch (err) { console.error('Supabase RSVP error', err); }
+    }
+
+    // Local state append
     const wish = { name, attend, message, ts: Date.now() };
     STATE.wishes.unshift(wish);
     localStorage.setItem('wi_wishes', JSON.stringify(STATE.wishes));
@@ -388,6 +402,8 @@ function initRSVP() {
 
     form.style.display = 'none';
     document.getElementById('rsvp-success').style.display = 'block';
+
+    if (submitBtn) { submitBtn.disabled = false; submitBtn.textContent = 'Kirim Konfirmasi & Ucapan'; }
 
     setTimeout(() => {
       form.style.display = '';
@@ -398,9 +414,26 @@ function initRSVP() {
 }
 
 // ─── Render Wishes ──────────────────────────────────────
-function renderWishes() {
+async function renderWishes() {
   const container = document.getElementById('wishes-list');
   if (!container) return;
+
+  // Try to load from Supabase FIRST
+  if (typeof supabase !== 'undefined') {
+    try {
+      const { data, error } = await supabase.from('wishes').select('*').order('created_at', { ascending: false });
+      if (!error && data) {
+        // Replace STATE.wishes with DB data
+        STATE.wishes = data.map(dbW => ({
+          name: dbW.guest_name,
+          attend: dbW.attend,
+          message: dbW.message,
+          ts: new Date(dbW.created_at).getTime()
+        }));
+      }
+    } catch (err) { console.error('Failed to load wishes from Supabase', err); }
+  }
+
   container.innerHTML = '';
   STATE.wishes.forEach(w => renderWish(w, false));
 }
@@ -439,19 +472,30 @@ function initMusic() {
   const audio = document.getElementById('bg-music');
   if (!btn || !audio) return;
 
-  // Load music source: localStorage base64 / URL > fallback file
-  const savedMusic = getStoreVal('wi_music_src', 'music_src');
-  if (savedMusic) {
-    audio.src = savedMusic;
+  // Music config may come from Supabase object or localStorage string
+  let musicSrc = localStorage.getItem('wi_music_src');
+  let musicAutoplay = localStorage.getItem('wi_music_autoplay') === 'true';
+
+  if (window.WEDDING_CONFIG && window.WEDDING_CONFIG.music && Object.keys(window.WEDDING_CONFIG.music).length) {
+    if (!musicSrc) musicSrc = window.WEDDING_CONFIG.music.src;
+    // localStorage string overrides config if explicitly set to 'true'/'false'
+    const storedAuto = localStorage.getItem('wi_music_autoplay');
+    if (storedAuto === 'true' || storedAuto === 'false') {
+      musicAutoplay = storedAuto === 'true';
+    } else {
+      musicAutoplay = window.WEDDING_CONFIG.music.autoplay === 'true' || window.WEDDING_CONFIG.music.autoplay === true;
+    }
+  }
+
+  if (musicSrc) {
+    audio.src = musicSrc;
     audio.load();
   } else {
-    // Try default file
     audio.src = 'assets/music.mp3';
   }
 
   // Auto-play setting
-  const autoplay = getStoreVal('wi_music_autoplay', 'music_autoplay') === 'true';
-  if (autoplay) {
+  if (musicAutoplay) {
     const tryPlay = () => {
       audio.play().then(() => {
         btn.classList.add('playing');
@@ -537,7 +581,7 @@ function initCouplePhotoUploads() {
 
 // ─── Opening Screen Background ───────────────────────────
 function loadOpeningBg() {
-  const ob = getStoreObj('wi_opening_bg', 'opening_bg');
+  const ob = getStoreObj('wi_opening_bg', 'bg_opening');
   if (!Object.keys(ob).length) return;
 
   const bgLayer  = document.getElementById('opening-bg-layer');
@@ -571,15 +615,30 @@ function loadOpeningBg() {
   }
 }
 
+// ─── Supabase Config Fetcher ───────────────────────────
+async function initSupabaseConfig() {
+  if (typeof supabase === 'undefined') return;
+  try {
+    const { data, error } = await supabase.from('wedding_config').select('*').eq('id', 1).single();
+    if (!error && data) {
+      window.WEDDING_CONFIG = Object.assign({}, window.WEDDING_CONFIG || {}, data);
+      console.log('✅ Supabase configuration loaded!');
+    }
+  } catch (err) { console.error('Error fetching config from DB', err); }
+}
+
 // ─── Init All ─────────────────────────────────────────
-window.addEventListener('DOMContentLoaded', () => {
+window.addEventListener('DOMContentLoaded', async () => {
+  // Tunggu konfigurasi dari Supabase jika ada sebelum merender tampilan
+  await initSupabaseConfig();
+
   loadSettings();
   loadGuestName();
   loadOpeningBg();
   initOpening();
   initScrollReveal();
   initRSVP();
-  renderWishes();
+  await renderWishes();
   initMusic();
   initGalleryUploads();
   initEventIconUploads();

@@ -705,31 +705,58 @@ function resetWishes() {
 }
 
 /* ───────────────────────────────────────────────────────
-   DEPLOYMENT CONFIG EXPORT
+   DEPLOYMENT CONFIG EXPORT (Now Pushes to Supabase)
 ─────────────────────────────────────────────────────── */
-function exportDeploymentConfig() {
+async function exportDeploymentConfig() {
   const payload = {
+    id: 1, // enforce single row
     colors: JSON.parse(localStorage.getItem('wi_colors') || '{}'),
     texts: JSON.parse(localStorage.getItem('wi_texts') || '{}'),
     images: JSON.parse(localStorage.getItem('wi_images') || '{}'),
-    bg: JSON.parse(localStorage.getItem('wi_background') || '{}'),
-    opening_bg: JSON.parse(localStorage.getItem('wi_opening_bg') || '{}'),
-    petal_image: localStorage.getItem('wi_petal_image') || '',
-    maps_url: localStorage.getItem('wi_maps_url') || '',
-    maps_link: localStorage.getItem('wi_maps_link') || '',
+    bg_main: JSON.parse(localStorage.getItem('wi_background') || '{}'),
+    bg_opening: JSON.parse(localStorage.getItem('wi_opening_bg') || '{}'),
+    music: {
+      src: localStorage.getItem('wi_music_src') || '',
+      type: localStorage.getItem('wi_music_type') || '',
+      autoplay: localStorage.getItem('wi_music_autoplay') || 'false'
+    },
+    maps: {
+      url: localStorage.getItem('wi_maps_url') || '',
+      link: localStorage.getItem('wi_maps_link') || ''
+    }
+  };
+
+  // 1. Try push to Supabase if connected
+  if (typeof supabase !== 'undefined') {
+    try {
+      showToast('Mengirim data ke Database...', 'info');
+      const { error } = await supabase.from('wedding_config').upsert(payload);
+      if (!error) {
+        showToast('Sukses! Semua editan tersimpan ke Database Cloud 🚀', 'success');
+        return; // Success, no need to download config.js fallback
+      } else {
+        console.error('Supabase UPSERT Error:', error);
+        showToast('Gagal simpan ke DB. Mendownload fallback config.js...', 'error');
+      }
+    } catch (err) {
+      console.error('Supabase push failed', err);
+    }
+  }
+
+  // 2. Fallback: Download config.js
+  const fallbackPayload = {
+    colors: payload.colors, texts: payload.texts, images: payload.images,
+    bg: payload.bg_main, opening_bg: payload.bg_opening,
+    maps_url: payload.maps.url, maps_link: payload.maps.link,
     countdown_date: localStorage.getItem('wi_countdown_date') || '',
-    music_src: localStorage.getItem('wi_music_src') || '',
-    music_type: localStorage.getItem('wi_music_type') || '',
-    music_autoplay: localStorage.getItem('wi_music_autoplay') || 'false'
+    music_src: payload.music.src, music_autoplay: payload.music.autoplay
   };
 
   const jsContent = `/* 
  * WEDDING INVITATION CONFIGURATION 
  * Generated automatically from Admin Panel.
- * This file contains all your images, colors, and texts. 
- * Upload this file along with your website to Vercel/Hosting.
  */
-window.WEDDING_CONFIG = ${JSON.stringify(payload, null, 2)};
+window.WEDDING_CONFIG = ${JSON.stringify(fallbackPayload, null, 2)};
 `;
 
   const blob = new Blob([jsContent], { type: 'application/javascript;charset=utf-8' });
@@ -739,7 +766,7 @@ window.WEDDING_CONFIG = ${JSON.stringify(payload, null, 2)};
   document.body.appendChild(a);
   a.click();
   document.body.removeChild(a);
-  showToast('config.js berhasil di-download! 🚀', 'success');
+  showToast('config.js cadangan di-download.', 'info');
 }
 
 /* ───────────────────────────────────────────────────────
