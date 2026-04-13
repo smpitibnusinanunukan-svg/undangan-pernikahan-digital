@@ -622,7 +622,14 @@ function initSettingsTab() {
       // Try Supabase Storage first (avoids localStorage quota)
       if (window.sb) {
         try {
-          const path = `music/${Date.now()}_${file.name}`;
+          // Sanitize filename — remove special chars, spaces, non-ASCII
+          const safeName = file.name
+            .normalize('NFD')
+            .replace(/[\u0300-\u036f]/g, '')   // remove diacritics
+            .replace(/[^\w.\-]/g, '_')          // replace spaces & special chars with _
+            .replace(/_+/g, '_')                // collapse multiple underscores
+            .toLowerCase();
+          const path = `music/${Date.now()}_${safeName}`;
           const { data, error } = await window.sb.storage
             .from('wedding-assets')
             .upload(path, file, { upsert: true, contentType: file.type });
