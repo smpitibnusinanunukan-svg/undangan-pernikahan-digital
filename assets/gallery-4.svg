@@ -1,0 +1,11 @@
+﻿<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 400 400'>
+  <defs>
+    <linearGradient id='gal4' x1='0%' y1='0%' x2='100%' y2='100%'>
+      <stop offset='0%' stop-color='#c4d4e8'/>
+      <stop offset='100%' stop-color='#8395b5'/>
+    </linearGradient>
+  </defs>
+  <rect width='400' height='400' fill='url(#gal4)'/>
+  <text x='200' y='220' font-size='120' text-anchor='middle' fill='rgba(255,255,255,0.5)'>💙</text>
+  <text x='200' y='290' font-family='Georgia,serif' font-size='22' text-anchor='middle' fill='rgba(255,255,255,0.7)'>Foto 4</text>
+</svg>

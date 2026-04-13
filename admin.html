@@ -1,0 +1,638 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Panel Admin — Undangan Pernikahan</title>
+  <link rel="stylesheet" href="css/admin.css">
+</head>
+<body>
+
+<!-- Toast Container -->
+<div class="toast-wrap" id="toast-wrap"></div>
+
+<!-- Save Bar -->
+<div class="save-bar" id="save-bar">
+  <span>⚠️ Ada perubahan yang belum disimpan</span>
+  <div class="save-bar-actions">
+    <button class="save-bar-btn cancel"  id="save-bar-cancel">Batal</button>
+    <button class="save-bar-btn confirm" id="save-bar-confirm">💾 Simpan Semua</button>
+  </div>
+</div>
+
+<div class="admin-layout">
+
+  <!-- ═══════════════════ SIDEBAR ════════════════════════ -->
+  <aside class="sidebar">
+    <div class="sidebar-logo">
+      <div class="sidebar-logo-title">Wedding Admin</div>
+      <div class="sidebar-logo-sub">Panel Pengaturan</div>
+    </div>
+
+    <p class="sidebar-section-label">Menu Utama</p>
+    <ul class="sidebar-nav">
+      <li><a href="#" data-tab="text">
+        <span class="icon">✏️</span> Edit Teks
+      </a></li>
+      <li><a href="#" data-tab="color">
+        <span class="icon">🎨</span> Ubah Warna
+      </a></li>
+      <li><a href="#" data-tab="images">
+        <span class="icon">🖼️</span> Ganti Gambar
+      </a></li>
+      <li><a href="#" data-tab="background">
+        <span class="icon">🌄</span> Background
+      </a></li>
+      <li><a href="#" data-tab="whatsapp">
+        <span class="icon">📱</span> Kirim WhatsApp
+      </a></li>
+      <li><a href="#" data-tab="settings">
+        <span class="icon">⚙️</span> Pengaturan
+      </a></li>
+    </ul>
+
+    <div class="sidebar-bottom">
+      <a href="index.html" target="_blank" class="preview-btn">
+        👁️ Preview Undangan
+      </a>
+    </div>
+  </aside>
+
+  <!-- ═══════════════════ MAIN ═══════════════════════════ -->
+  <main class="main-content">
+
+    <!-- ──────────────── TAB: EDIT TEKS ───────────────── -->
+    <div class="tab-panel" id="panel-text">
+      <div class="page-header">
+        <h1 class="page-title">✏️ Edit Teks Undangan</h1>
+        <p class="page-desc">Ubah semua tulisan pada undangan. Perubahan disimpan di browser dan langsung berlaku.</p>
+      </div>
+
+      <div class="card">
+        <h3 class="card-title">Konten Undangan</h3>
+        <p class="card-desc">Isi semua field berikut sesuai data pernikahan Anda. Klik <strong>Simpan Semua</strong> setelah selesai.</p>
+        <div id="text-fields-container"></div>
+        <div style="margin-top:20px;display:flex;gap:10px;flex-wrap:wrap;">
+          <button class="btn btn-primary" onclick="saveAllChanges();showToast('Teks berhasil disimpan! ✨','success');showSaveBar(false);">
+            💾 Simpan Teks
+          </button>
+          <a href="index.html" target="_blank" class="btn btn-ghost">👁️ Preview</a>
+        </div>
+      </div>
+    </div>
+
+    <!-- ──────────────── TAB: WARNA ───────────────────── -->
+    <div class="tab-panel" id="panel-color">
+      <div class="page-header">
+        <h1 class="page-title">🎨 Ubah Warna Tema</h1>
+        <p class="page-desc">Kustomisasi palet warna undangan. Pilih tema preset atau atur sendiri tiap warna.</p>
+      </div>
+
+      <!-- Presets -->
+      <div class="card">
+        <h3 class="card-title">🌈 Tema Instan</h3>
+        <p class="card-desc">Klik salah satu untuk menerapkan tema preset ke semua warna sekaligus.</p>
+        <div class="preset-btns">
+          <button class="preset-btn" data-preset="rose">🌹 Rose Garden</button>
+          <button class="preset-btn" data-preset="sage">🌿 Sage Green</button>
+          <button class="preset-btn" data-preset="navy">🌊 Navy Blue</button>
+          <button class="preset-btn" data-preset="mauve">💜 Mauve Purple</button>
+          <button class="preset-btn" data-preset="earth">🌰 Earth Tones</button>
+        </div>
+      </div>
+
+      <!-- Custom Color Pickers -->
+      <div class="card">
+        <h3 class="card-title">🎨 Sesuaikan Warna</h3>
+        <p class="card-desc">Klik pada kotak warna berwarna untuk membuka color picker.</p>
+        <div class="color-grid" id="color-grid"></div>
+        <div style="margin-top:20px;display:flex;gap:10px;flex-wrap:wrap;">
+          <button class="btn btn-primary" onclick="saveAllChanges();showToast('Warna disimpan! ✨','success');showSaveBar(false);">
+            💾 Simpan Warna
+          </button>
+          <a href="index.html" target="_blank" class="btn btn-ghost">👁️ Preview</a>
+        </div>
+      </div>
+    </div>
+
+    <!-- ──────────────── TAB: GAMBAR ──────────────────── -->
+    <div class="tab-panel" id="panel-images">
+      <div class="page-header">
+        <h1 class="page-title">🖼️ Ganti Gambar</h1>
+        <p class="page-desc">Klik thumbnail untuk mengganti gambar. Upload langsung dari komputer — tersimpan otomatis.</p>
+      </div>
+
+      <!-- Photo Grid -->
+      <div class="card">
+        <h3 class="card-title">📸 Foto & Ikon</h3>
+        <p class="card-desc">Format didukung: JPG, PNG, WebP, GIF. Klik thumbnail → pilih file.</p>
+        <div class="img-grid" id="img-grid"></div>
+      </div>
+
+      <!-- Petal Image -->
+      <div class="card">
+        <h3 class="card-title">🌸 Gambar Kelopak Animasi</h3>
+        <p class="card-desc">
+          Ganti gambar kelopak yang berterbangan. Gunakan PNG transparan untuk hasil terbaik
+          (ukuran ideal 200×200px). Bisa diganti dengan bintang ⭐, hati 💖, daun 🍃, dll.
+        </p>
+        <div style="display:flex;align-items:center;gap:18px;flex-wrap:wrap;">
+          <div class="img-item" id="petal-img-item" style="width:110px;cursor:pointer;">
+            <img src="assets/petal.svg" alt="Petal" id="admin-petal-img" style="aspect-ratio:1;object-fit:contain;padding:8px;">
+            <div class="img-edit-overlay">📷</div>
+            <div class="img-item-label">Petal</div>
+          </div>
+          <div style="flex:1;min-width:220px;">
+            <p style="font-size:13px;color:var(--c-muted);line-height:1.8;">
+              ✅ PNG dengan background transparan<br>
+              ✅ Ukuran ideal: <strong style="color:var(--c-text);">200×200px</strong><br>
+              ✅ Bisa berupa emoji, bunga, atau bentuk apapun
+            </p>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ──────────────── TAB: BACKGROUND ─────────────── -->
+    <div class="tab-panel" id="panel-background">
+      <div class="page-header">
+        <h1 class="page-title">🌄 Pengaturan Background</h1>
+        <p class="page-desc">Upload gambar background, atur kegelapan, blur, kecerahan, opasitas overlay, dan lainnya.</p>
+      </div>
+
+      <!-- Mode Selector -->
+      <div class="card" style="margin-bottom:20px;display:flex;gap:10px;flex-wrap:wrap;align-items:center;">
+        <span style="font-size:14px;color:var(--c-text);font-weight:600;">Edit Background:</span>
+        <button class="btn btn-sm btn-primary" id="bg-mode-main">Halaman Utama (Scroll)</button>
+        <button class="btn btn-sm btn-ghost" id="bg-mode-opening">Layar Pembuka (Awal)</button>
+      </div>
+
+      <!-- PREVIEW -->
+      <div class="card">
+        <h3 class="card-title">👁️ Preview Background</h3>
+        <p class="card-desc">Preview langsung sesuai pengaturan di bawah.</p>
+        <div class="bg-preview" id="bg-preview">
+          <div class="bg-preview-content" id="bg-preview-content"></div>
+          <div class="bg-preview-overlay"  id="bg-preview-overlay"></div>
+          <div class="bg-preview-text">Ahmad &amp; Siti</div>
+          <button class="bg-clear-btn" id="bg-clear-btn" title="Hapus gambar background">
+            ✕ Hapus Gambar
+          </button>
+        </div>
+      </div>
+
+      <!-- Upload Gambar -->
+      <div class="card">
+        <h3 class="card-title">📁 Upload Gambar Background</h3>
+        <p class="card-desc">Drag & drop atau klik area di bawah untuk memilih gambar dari komputer Anda.</p>
+
+        <div id="bg-upload-area" style="
+          border: 2px dashed var(--c-border);
+          border-radius: 12px;
+          padding: 36px 20px;
+          text-align: center;
+          cursor: pointer;
+          transition: border-color 0.3s, background 0.3s;
+          background: rgba(255,255,255,0.02);
+          margin-bottom: 16px;
+        " onmouseover="this.style.borderColor='var(--c-primary)';this.style.background='rgba(181,131,141,0.06)'"
+           onmouseout="this.style.borderColor='';this.style.background='rgba(255,255,255,0.02)'"
+        >
+          <div style="font-size:40px;margin-bottom:10px;">🌄</div>
+          <div style="font-size:14px;color:var(--c-text);font-weight:500;">Klik atau drag gambar ke sini</div>
+          <div style="font-size:12px;color:var(--c-muted);margin-top:4px;">JPG, PNG, WebP · Ukuran bebas</div>
+        </div>
+        <input type="file" id="bg-image-file" accept="image/*" style="display:none;">
+
+        <!-- Warna Fallback -->
+        <div class="form-group">
+          <label for="bg-color-input">Warna Background (jika tidak ada gambar)</label>
+          <div style="display:flex;align-items:center;gap:12px;">
+            <div style="position:relative;width:44px;height:44px;border-radius:9px;overflow:hidden;flex-shrink:0;border:1px solid var(--c-border);">
+              <div id="bg-color-swatch" style="position:absolute;inset:0;background:#fdf6f0;"></div>
+              <input type="color" id="bg-color-input" value="#fdf6f0" style="position:absolute;inset:-6px;width:calc(100%+12px);height:calc(100%+12px);opacity:0;cursor:pointer;"
+                oninput="document.getElementById('bg-color-swatch').style.background=this.value">
+            </div>
+            <input type="text" id="bg-color-hex" value="#fdf6f0" style="max-width:130px;" placeholder="#fdf6f0"
+              oninput="const ci=document.getElementById('bg-color-input');if(this.value.match(/^#[0-9a-f]{6}$/i)){ci.value=this.value;ci.dispatchEvent(new Event('input'));}">
+            <span style="font-size:12px;color:var(--c-muted);">← klik kotak untuk picker</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- Overlay -->
+      <div class="card">
+        <h3 class="card-title">🎭 Overlay Warna</h3>
+        <p class="card-desc">Tambahkan lapisan warna di atas gambar untuk menyesuaikan tampilan.</p>
+        <div class="form-group">
+          <label for="bg-overlay-color">Warna Overlay</label>
+          <div style="display:flex;align-items:center;gap:12px;flex-wrap:wrap;">
+            <div style="position:relative;width:44px;height:44px;border-radius:9px;overflow:hidden;flex-shrink:0;border:1px solid var(--c-border);">
+              <div id="overlay-color-swatch" style="position:absolute;inset:0;background:#000;"></div>
+              <input type="color" id="bg-overlay-color" value="#000000" style="position:absolute;inset:-6px;width:calc(100%+12px);height:calc(100%+12px);opacity:0;cursor:pointer;"
+                oninput="document.getElementById('overlay-color-swatch').style.background=this.value">
+            </div>
+            <div style="display:flex;gap:8px;flex-wrap:wrap;">
+              <button class="btn btn-sm btn-ghost" onclick="document.getElementById('bg-overlay-color').value='#000000';document.getElementById('bg-overlay-color').dispatchEvent(new Event('input'))">⬛ Hitam</button>
+              <button class="btn btn-sm btn-ghost" onclick="document.getElementById('bg-overlay-color').value='#ffffff';document.getElementById('bg-overlay-color').dispatchEvent(new Event('input'))">⬜ Putih</button>
+              <button class="btn btn-sm btn-ghost" onclick="document.getElementById('bg-overlay-color').value='#b5838d';document.getElementById('bg-overlay-color').dispatchEvent(new Event('input'))">🌸 Pink</button>
+            </div>
+          </div>
+        </div>
+
+        <div class="range-group">
+          <label for="bg-overlay-opacity">
+            Opasitas Overlay
+            <span id="val-overlay-opacity">0%</span>
+          </label>
+          <input type="range" id="bg-overlay-opacity" min="0" max="90" step="1" value="0">
+        </div>
+      </div>
+
+      <!-- Filter Efek -->
+      <div class="card">
+        <h3 class="card-title">✨ Efek Filter</h3>
+        <p class="card-desc">Sesuaikan tampilan visual gambar background.</p>
+
+        <div class="range-group">
+          <label for="bg-blur">
+            Blur (Kabur)
+            <span id="val-blur">0px</span>
+          </label>
+          <input type="range" id="bg-blur" min="0" max="20" step="0.5" value="0">
+        </div>
+
+        <div class="range-group">
+          <label for="bg-brightness">
+            Kecerahan
+            <span id="val-brightness">100%</span>
+          </label>
+          <input type="range" id="bg-brightness" min="30" max="170" step="1" value="100">
+        </div>
+
+        <div class="range-group">
+          <label for="bg-saturate">
+            Saturasi (Warna)
+            <span id="val-saturate">100%</span>
+          </label>
+          <input type="range" id="bg-saturate" min="0" max="200" step="1" value="100">
+        </div>
+
+        <div style="display:flex;gap:10px;flex-wrap:wrap;margin-top:6px;">
+          <button class="btn btn-sm btn-ghost" onclick="resetBgFilters()">🔄 Reset Filter</button>
+          <button class="btn btn-sm btn-ghost" onclick="applyBgPreset('dark')">🌙 Mode Gelap</button>
+          <button class="btn btn-sm btn-ghost" onclick="applyBgPreset('light')">☀️ Mode Terang</button>
+          <button class="btn btn-sm btn-ghost" onclick="applyBgPreset('vintage')">📷 Vintage</button>
+          <button class="btn btn-sm btn-ghost" onclick="applyBgPreset('dreamy')">✨ Dreamy</button>
+        </div>
+      </div>
+
+      <!-- Posisi & Tampilan -->
+      <div class="card">
+        <h3 class="card-title">📐 Posisi & Tampilan Gambar</h3>
+        <div class="form-grid">
+          <div class="form-group">
+            <label for="bg-size">Ukuran Gambar</label>
+            <select id="bg-size">
+              <option value="cover">Cover (Isi Penuh)</option>
+              <option value="contain">Contain (Tampilkan Semua)</option>
+              <option value="100% 100%">Stretch (Regangkan)</option>
+              <option value="auto">Auto</option>
+              <option value="50%">50% Ukuran</option>
+            </select>
+          </div>
+          <div class="form-group">
+            <label for="bg-position">Posisi</label>
+            <select id="bg-position">
+              <option value="center">Tengah</option>
+              <option value="top">Atas</option>
+              <option value="bottom">Bawah</option>
+              <option value="left">Kiri</option>
+              <option value="right">Kanan</option>
+              <option value="top left">Atas Kiri</option>
+              <option value="top right">Atas Kanan</option>
+              <option value="bottom left">Bawah Kiri</option>
+              <option value="bottom right">Bawah Kanan</option>
+            </select>
+          </div>
+          <div class="form-group">
+            <label for="bg-attachment">Perilaku Scroll</label>
+            <select id="bg-attachment">
+              <option value="scroll">Scroll (Ikut halaman)</option>
+              <option value="fixed">Fixed (Parallax effect)</option>
+            </select>
+          </div>
+        </div>
+      </div>
+
+      <!-- Undangan Page Info -->
+      <div class="info-box">
+        💡 <strong>Tip:</strong> Perubahan background disimpan otomatis saat Anda menggeser slider.
+        Buka <a href="index.html" target="_blank" style="color:var(--c-primary);">halaman undangan</a> untuk melihat hasilnya.
+        Background akan diterapkan ke seluruh halaman undangan menggunakan data yang tersimpan.
+      </div>
+    </div>
+
+    <!-- ──────────────── TAB: WHATSAPP ────────────────── -->
+    <div class="tab-panel" id="panel-whatsapp">
+      <div class="page-header">
+        <h1 class="page-title">📱 Kirim Massal via WhatsApp</h1>
+        <p class="page-desc">Kirim link undangan personal ke banyak kontak sekaligus. Setiap link mengandung nama tamu masing-masing.</p>
+      </div>
+
+      <!-- Link Undangan -->
+      <div class="card">
+        <h3 class="card-title">🔗 Link Undangan</h3>
+        <p class="card-desc">URL halaman undangan yang akan dikirim. Nama tamu akan otomatis ditambahkan sebagai parameter <code>?to=NamaTamu</code>.</p>
+        <div class="form-group">
+          <label for="wa-base-url">URL Halaman Undangan</label>
+          <input type="url" id="wa-base-url" placeholder="https://undangan-anda.com/index.html">
+        </div>
+        <div class="info-box">
+          💡 Contoh hasil link: <strong style="color:var(--c-primary);">https://undangan.com/?to=Budi+Santoso</strong><br>
+          Nama akan tampil di layar pembuka dan hero undangan.
+        </div>
+      </div>
+
+      <!-- Template Pesan -->
+      <div class="card">
+        <h3 class="card-title">💬 Template Pesan</h3>
+        <p class="card-desc">
+          Gunakan placeholder: <code>{nama}</code> = nama tamu, <code>{link}</code> = link undangan personal, <code>{no}</code> = nomor urut.
+        </p>
+        <div class="form-group">
+          <label for="wa-template">Isi Pesan</label>
+          <textarea class="wa-template" id="wa-template">Assalamu'alaikum Warahmatullahi Wabarakatuh 🌸
+
+Kepada Yth.
+*{nama}*
+
+Dengan penuh kebahagiaan, kami mengundang Bapak/Ibu/Saudara/i untuk hadir di hari pernikahan kami.
+
+Klik link berikut untuk membuka undangan digital kami:
+👉 {link}
+
+Kehadiran Bapak/Ibu/Saudara/i adalah kehormatan dan kebahagiaan terbesar bagi kami.
+
+Wassalamu'alaikum Warahmatullahi Wabarakatuh 💌
+
+*Ahmad & Siti*</textarea>
+        </div>
+
+        <!-- Quick presets -->
+        <div style="display:flex;gap:8px;flex-wrap:wrap;margin-top:8px;">
+          <button class="btn btn-sm btn-ghost" onclick="setWaTemplate('formal')">📝 Formal</button>
+          <button class="btn btn-sm btn-ghost" onclick="setWaTemplate('casual')">😊 Kasual</button>
+          <button class="btn btn-sm btn-ghost" onclick="setWaTemplate('islami')">🕌 Islami</button>
+        </div>
+      </div>
+
+      <!-- Daftar Kontak -->
+      <div class="card">
+        <h3 class="card-title">📋 Daftar Kontak</h3>
+        <p class="card-desc">
+          Satu baris per tamu. Format yang didukung:<br>
+          <code>Nama, 08xxx</code> &nbsp;|&nbsp; <code>Nama +628xxx</code> &nbsp;|&nbsp; <code>+628xxx</code>
+        </p>
+        <div class="form-group">
+          <label for="wa-list">Daftar Tamu (paste dari Excel/spreadsheet juga bisa)</label>
+          <textarea class="wa-list-area" id="wa-list" placeholder="Budi Santoso, 081234567890
+Siti Aminah, +6285678901234
+Pak Wahyu 08987654321
++6281234509876"></textarea>
+        </div>
+        <div style="display:flex;gap:10px;align-items:center;flex-wrap:wrap;margin-bottom:16px;">
+          <button class="btn btn-gold" id="wa-parse-btn">🔍 Parse & Preview</button>
+          <span id="wa-count-label" style="font-size:13px;color:var(--c-muted);"></span>
+        </div>
+
+        <!-- Manual add -->
+        <div style="background:rgba(255,255,255,0.02);border:1px solid var(--c-border);border-radius:10px;padding:14px;">
+          <p style="font-size:11px;color:var(--c-muted);text-transform:uppercase;letter-spacing:1px;margin-bottom:10px;">➕ Tambah Manual</p>
+          <div style="display:grid;grid-template-columns:1fr 1fr auto;gap:10px;align-items:end;">
+            <div class="form-group" style="margin:0;">
+              <label for="wa-add-name">Nama Tamu</label>
+              <input type="text" id="wa-add-name" placeholder="Muhammad Ali">
+            </div>
+            <div class="form-group" style="margin:0;">
+              <label for="wa-add-phone">Nomor HP</label>
+              <input type="tel" id="wa-add-phone" placeholder="081234567890">
+            </div>
+            <button class="btn btn-primary" id="wa-add-btn">➕ Tambah</button>
+          </div>
+        </div>
+
+        <!-- Contact rows -->
+        <div class="wa-contact-rows" id="wa-contact-rows" style="display:none;"></div>
+      </div>
+
+      <!-- Pengaturan Kirim -->
+      <div class="card">
+        <h3 class="card-title">⚙️ Pengaturan Pengiriman</h3>
+        <div class="form-group" style="max-width:280px;">
+          <label for="wa-delay">Jeda antar pesan (detik)</label>
+          <input type="number" id="wa-delay" value="4" min="2" max="60">
+        </div>
+
+        <div class="info-box" style="margin-bottom:16px;">
+          ⚠️ <strong>Penting:</strong> Jeda minimal 3 detik dianjurkan. Setiap pesan membuka tab baru WhatsApp Web — pastikan pop-up tidak diblokir browser.<br>
+          Anda masih perlu klik <strong>Kirim</strong> di setiap tab yang terbuka.
+        </div>
+
+        <div id="wa-send-btn-wrap" style="display:none;">
+          <button class="btn btn-primary" id="wa-send-btn" style="width:100%;justify-content:center;padding:14px;font-size:15px;border-radius:12px;">
+            🚀 Kirim Semua Pesan
+          </button>
+        </div>
+
+        <div class="wa-progress" id="wa-progress">
+          <div class="wa-progress-bar-wrap">
+            <div class="wa-progress-bar" id="wa-progress-bar"></div>
+          </div>
+          <p class="wa-progress-text" id="wa-progress-text">Mempersiapkan...</p>
+        </div>
+      </div>
+    </div>
+
+    <!-- ──────────────── TAB: PENGATURAN ──────────────── -->
+    <div class="tab-panel" id="panel-settings">
+      <div class="page-header">
+        <h1 class="page-title">⚙️ Pengaturan</h1>
+        <p class="page-desc">Pengaturan tanggal, lokasi, dan manajemen data undangan.</p>
+      </div>
+
+      <div class="card">
+        <h3 class="card-title">🎵 Musik Latar</h3>
+        <p class="card-desc">Ganti musik yang diputar pada undangan.</p>
+        <div class="form-group">
+          <label>Upload File Audio (MP3/WAV)</label>
+          <div style="display:flex;gap:10px;align-items:center;">
+            <input type="file" id="settings-music-file" accept="audio/*" style="display:none;">
+            <button class="btn btn-primary" onclick="document.getElementById('settings-music-file').click()">Pilih File Audio</button>
+            <span id="settings-music-filename" style="font-size:12px;color:var(--c-muted);">Tidak ada file terpilih</span>
+          </div>
+        </div>
+        <div class="form-group" style="margin-top:14px;">
+          <label>Autoplay Musik (Otomatis Putar)</label>
+          <div style="display:flex;align-items:center;gap:8px;">
+            <input type="checkbox" id="settings-music-autoplay" style="width:auto;transform:scale(1.2);">
+            <span style="font-size:13px;color:var(--c-text);">Aktifkan Autoplay (tergantung izin browser)</span>
+          </div>
+        </div>
+      </div>
+
+      <div class="card">
+        <h3 class="card-title">📅 Tanggal Countdown</h3>
+        <div class="form-group">
+          <label for="settings-countdown-date">Tanggal & Jam Pernikahan</label>
+          <input type="datetime-local" id="settings-countdown-date" value="2026-08-17T09:00"
+            oninput="localStorage.setItem('wi_countdown_date', this.value); showToast('Tanggal countdown disimpan! ⏰','success');">
+        </div>
+      </div>
+
+      <div class="card">
+        <h3 class="card-title">🗺️ Google Maps</h3>
+        <div class="form-group">
+          <label for="settings-maps-embed">Embed URL (src dari iframe)</label>
+          <input type="url" id="settings-maps-embed" placeholder="https://www.google.com/maps/embed?pb=..."
+            oninput="localStorage.setItem('wi_maps_url', this.value); showSaveBar(true);">
+        </div>
+        <div class="form-group">
+          <label for="settings-maps-link">Link Buka di Maps</label>
+          <input type="url" id="settings-maps-link" placeholder="https://goo.gl/maps/..."
+            oninput="localStorage.setItem('wi_maps_link', this.value); showSaveBar(true);">
+        </div>
+        <div class="info-box">
+          Cara dapat embed URL: Google Maps → Share → Embed a map → salin URL dari atribut <code>src</code> iframe.
+        </div>
+      </div>
+
+      <div class="card">
+        <h3 class="card-title">📊 Export Data Tamu</h3>
+        <p class="card-desc">Download data ucapan dan RSVP yang sudah masuk.</p>
+        <div style="display:flex;gap:10px;flex-wrap:wrap;">
+          <button class="btn btn-gold" onclick="exportWishes()">📥 Export TXT</button>
+          <button class="btn btn-ghost" onclick="exportWishesCsv()">📊 Export CSV</button>
+        </div>
+      </div>
+
+      <!-- VERCEL DEPLOYMENT CONFIG -->
+      <div class="card" style="border-color:var(--c-primary); background:rgba(212,163,115,0.05);">
+        <h3 class="card-title" style="color:var(--c-primary);">🚀 Siap Publish ke Vercel?</h3>
+        <p class="card-desc" style="margin-bottom:12px;">
+          Semua pengaturan Anda saat ini tersimpan di browser Anda (lokal). 
+          Agar tamu undangan lain bisa melihat desain yang sudah Anda buat, Anda harus mengekspor konfigurasi ini.
+        </p>
+        <ol style="font-size:13px;color:var(--c-text);padding-left:18px;margin-bottom:16px;line-height:1.6;">
+          <li>Klik tombol <strong>Download config.js</strong> di bawah.</li>
+          <li>Simpan file yang ter-download tersebut ke folder <strong><code style="background:#eee;padding:2px 4px;border-radius:4px;">js/</code></strong> di folder proyek Anda (menimpa file lama jika ada).</li>
+          <li>Upload semua folder undangan Anda ke GitHub lalu deploy ke Vercel/hosting.</li>
+        </ol>
+        <button class="btn btn-primary" onclick="exportDeploymentConfig()" style="font-weight:600;">
+          📦 Download config.js
+        </button>
+      </div>
+
+      <div class="card" style="border-color:rgba(248,113,113,0.25);">
+        <h3 class="card-title" style="color:#f87171;">⚠️ Zona Bahaya</h3>
+        <p class="card-desc">Tindakan berikut tidak dapat dibatalkan.</p>
+        <div style="display:flex;gap:10px;flex-wrap:wrap;">
+          <button class="btn btn-danger" onclick="resetWishes()">🗑️ Hapus Ucapan</button>
+          <button class="btn btn-danger" id="btn-reset-all">🔄 Reset Semua ke Default</button>
+        </div>
+      </div>
+    </div>
+
+  </main>
+</div><!-- /admin-layout -->
+
+<script src="js/editor.js"></script>
+<script src="js/whatsapp.js"></script>
+
+<script>
+/* ── Sync bg-color-input with hex input ─────────────── */
+document.addEventListener('DOMContentLoaded', () => {
+  const colorInp = document.getElementById('bg-color-input');
+  const hexInp   = document.getElementById('bg-color-hex');
+  if (colorInp && hexInp) {
+    colorInp.addEventListener('input', () => { hexInp.value = colorInp.value; });
+  }
+});
+
+/* ── BG Filter Presets ────────────────────────────────── */
+function applyBgPreset(name) {
+  const presets = {
+    dark:    { blur: 0, brightness: 60,  saturate: 80,  overlay: 40 },
+    light:   { blur: 0, brightness: 130, saturate: 90,  overlay: 0  },
+    vintage: { blur: 0, brightness: 90,  saturate: 60,  overlay: 20 },
+    dreamy:  { blur: 4, brightness: 110, saturate: 120, overlay: 10 },
+  };
+  const p = presets[name];
+  if (!p) return;
+
+  const set = (id, val) => {
+    const el  = document.getElementById(id);
+    if (el) { el.value = val; el.dispatchEvent(new Event('input')); }
+  };
+  set('bg-blur',            p.blur);
+  set('bg-brightness',      p.brightness);
+  set('bg-saturate',        p.saturate);
+  set('bg-overlay-opacity', p.overlay);
+  showToast(`Preset "${name}" diterapkan`, 'info');
+}
+
+function resetBgFilters() {
+  ['bg-blur','bg-brightness','bg-saturate'].forEach(id => {
+    const el = document.getElementById(id);
+    if (!el) return;
+    el.value = id === 'bg-blur' ? 0 : 100;
+    el.dispatchEvent(new Event('input'));
+  });
+  document.getElementById('bg-overlay-opacity').value = 0;
+  document.getElementById('bg-overlay-opacity').dispatchEvent(new Event('input'));
+  showToast('Filter direset ke default', 'info');
+}
+
+/* ── WA Template Presets ──────────────────────────────── */
+function setWaTemplate(type) {
+  const tpl = {
+    formal: `Yth. Bapak/Ibu/Saudara/i *{nama}*
+
+Dengan hormat, kami mengundang kehadiran Anda pada acara pernikahan kami.
+
+🔗 Undangan Digital: {link}
+
+Kehadiran Anda merupakan kehormatan bagi kami.
+
+Hormat kami,
+*Ahmad & Siti*`,
+    casual: `Haii *{nama}*! 👋
+
+Kami mau ngabar, kami akan menikah! 💍🎉
+Yuk buka undangan digital kami:
+👉 {link}
+
+Semoga bisa hadir ya! 🙏💖
+- Ahmad & Siti`,
+    islami: `Bismillahirrahmanirrohim 🌙
+
+Assalamu'alaikum Wr. Wb.
+
+Kepada *{nama}* yang kami hormati,
+
+Alhamdulillah dengan memohon ridho Allah SWT, kami bermaksud menyelenggarakan akad nikah dan walimatul 'ursy putra-putri kami.
+
+Buka undangan kami di:
+🌸 {link}
+
+Mohon doa restu dan kehadiran Anda.
+Wassalamu'alaikum Wr. Wb.
+
+*Ahmad & Siti*`,
+  };
+  const el = document.getElementById('wa-template');
+  if (el && tpl[type]) { el.value = tpl[type]; showToast(`Template "${type}" diterapkan`, 'info'); }
+}
+</script>
+</body>
+</html>

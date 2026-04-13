@@ -1,0 +1,376 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title id="page-title">Undangan Pernikahan — Ahmad &amp; Siti</title>
+  <meta name="description" content="Dengan penuh kebahagiaan kami mengundang Bapak/Ibu/Saudara/i untuk hadir di hari pernikahan kami.">
+  <link rel="stylesheet" href="css/style.css">
+  <!-- Load permanent settings if it exists -->
+  <script src="js/config.js"></script>
+</head>
+<body>
+
+<!-- ═══ CANVAS PETAL ═══════════════════════════════ -->
+<canvas id="petal-canvas"></canvas>
+
+<!-- ═══ MUSIC TOGGLE ═══════════════════════════════ -->
+<button class="music-btn" id="music-btn" title="Musik" aria-label="Toggle musik">🎵</button>
+<!-- Audio src will be set dynamically from localStorage or fallback to file -->
+<audio id="bg-music" loop preload="none"></audio>
+
+
+<!-- ═══ OPENING SCREEN ════════════════════════════════ -->
+<div id="opening-screen">
+  <!-- Custom background layers (set via admin panel) -->
+  <div id="opening-bg-layer" style="position:absolute;inset:0;z-index:0;background-size:cover;background-position:center;transition:all 0.5s;"></div>
+  <div id="opening-bg-overlay" style="position:absolute;inset:0;z-index:1;"></div>
+
+  <!-- Floating deco flowers -->
+  <div class="opening-deco" aria-hidden="true" style="position:absolute;inset:0;z-index:2;pointer-events:none;">
+    <span class="deco-flower" style="top:8%;left:5%;font-size:36px;">🌸</span>
+    <span class="deco-flower" style="top:12%;right:8%;font-size:28px;">🌺</span>
+    <span class="deco-flower" style="bottom:15%;left:10%;font-size:32px;">🌼</span>
+    <span class="deco-flower" style="bottom:10%;right:5%;font-size:24px;">🌸</span>
+    <span class="deco-flower" style="top:50%;left:2%;font-size:20px;">🌷</span>
+    <span class="deco-flower" style="top:40%;right:3%;font-size:22px;">🌷</span>
+  </div>
+
+  <div class="opening-content" style="position:relative;z-index:3;">
+    <p class="opening-tag" id="ed-opening-tag">Undangan Pernikahan</p>
+    <p class="opening-guest" id="ed-opening-salutation">Kepada Yth.</p>
+    <!-- Single guest -->
+    <h1 class="opening-guestname" id="opening-guest-name">Bapak/Ibu/Saudara/i</h1>
+    <!-- Pasangan (hidden by default, shown when ?pasangan= param present) -->
+    <div id="opening-couple-wrap" style="display:none;">
+      <h1 class="opening-guestname" id="opening-guest-name-1" style="line-height:1;"></h1>
+      <p style="font-family:var(--font-serif);font-size:clamp(20px,5vw,32px);color:var(--color-gold);margin:4px 0;">&amp;</p>
+      <h1 class="opening-guestname" id="opening-guest-name-2" style="line-height:1;"></h1>
+    </div>
+
+    <div class="divider" style="max-width:260px;margin:20px auto;">
+      <span class="divider-icon">💐</span>
+    </div>
+
+    <p style="font-family:var(--font-serif);font-style:italic;font-size:15px;color:var(--color-text-light);margin-bottom:28px;" id="ed-opening-hint">
+      Klik untuk membuka undangan kami
+    </p>
+
+    <button class="btn-open" id="btn-open-invite">
+      <svg viewBox="0 0 24 24"><path d="M20 4H4c-1.1 0-2 .9-2 2v12c0 1.1.9 2 2 2h16c1.1 0 2-.9 2-2V6c0-1.1-.9-2-2-2zm0 4l-8 5-8-5V6l8 5 8-5v2z"/></svg>
+      <span id="ed-open-btn-text">Buka Undangan</span>
+    </button>
+  </div>
+</div>
+
+<!-- ═══════════════════════════════════════════════════
+      MAIN CONTENT
+══════════════════════════════════════════════════════ -->
+<main id="main-content">
+
+  <!-- ── HERO ──────────────────────────────────────── -->
+  <section id="hero">
+    <!-- Background deco flowers -->
+    <span class="deco-flower" style="top:10%;left:3%;font-size:42px;" aria-hidden="true">🌸</span>
+    <span class="deco-flower" style="top:20%;right:5%;font-size:34px;" aria-hidden="true">🌺</span>
+    <span class="deco-flower" style="bottom:20%;left:5%;font-size:28px;" aria-hidden="true">🌼</span>
+    <span class="deco-flower" style="bottom:10%;right:3%;font-size:36px;" aria-hidden="true">🌷</span>
+
+    <div class="container">
+      <p class="hero-invite-label reveal">Undangan Pernikahan</p>
+
+      <!-- Hero couple photo -->
+      <div class="hero-wreath reveal reveal-delay-1" id="hero-photo-wrap" title="Klik untuk ganti foto">
+        <img src="assets/couple.svg" alt="Foto Pasangan" class="hero-deco-img" id="hero-photo">
+        <span class="hero-change-hint">📷 Ganti Foto</span>
+      </div>
+
+      <div class="divider reveal reveal-delay-1">
+        <span class="divider-icon">🌿</span>
+      </div>
+
+      <h1 class="hero-title reveal reveal-delay-2">
+        <span id="ed-groom-name">Ahmad</span>
+        <span class="hero-ampersand">&amp;</span>
+        <span id="ed-bride-name">Siti</span>
+      </h1>
+
+      <p class="hero-tagline reveal reveal-delay-3" id="ed-tagline">
+        Bersama dalam ikatan suci, bersatu dalam doa dan cinta
+      </p>
+
+      <div class="divider reveal reveal-delay-3">
+        <span class="divider-icon">💍</span>
+      </div>
+
+      <div class="hero-date-row reveal reveal-delay-4">
+        <div class="hero-date-item">
+          <div class="hero-date-num">17</div>
+          <div class="hero-date-label">Agustus</div>
+        </div>
+        <div class="hero-date-sep">·</div>
+        <div class="hero-date-item">
+          <div class="hero-date-num" id="ed-event-date">2026</div>
+          <div class="hero-date-label">Tahun</div>
+        </div>
+        <div class="hero-date-sep">·</div>
+        <div class="hero-date-item">
+          <div class="hero-date-num">09</div>
+          <div class="hero-date-label">Pagi</div>
+        </div>
+      </div>
+
+      <p style="margin-top:28px;font-size:13px;letter-spacing:1px;color:var(--color-text-light);" class="reveal reveal-delay-4" id="hero-guest-wrap">
+        Kepada Yth. <strong id="hero-guest-name">Bapak/Ibu/Saudara/i</strong>
+      </p>
+    </div>
+  </section>
+
+  <!-- ── QUOTE ──────────────────────────────────────── -->
+  <section id="quote">
+    <div class="container reveal">
+      <div class="quote-text" id="ed-quote">
+        "Dan di antara tanda-tanda kekuasaan-Nya ialah Dia menciptakan untukmu isteri-isteri dari jenismu sendiri, supaya kamu cenderung dan merasa tenteram kepadanya, dan Dia menjadikan di antaramu rasa kasih dan sayang."
+      </div>
+      <p class="quote-source" id="ed-quote-source">— QS. Ar-Rum: 21</p>
+    </div>
+  </section>
+
+  <!-- ── COUPLE ─────────────────────────────────────── -->
+  <section id="couple">
+    <div class="container">
+      <p class="section-label reveal">Mempelai</p>
+      <h2 class="section-title reveal">Dengan Segala Kerendahan Hati</h2>
+      <div class="divider reveal"><span class="divider-icon">💐</span></div>
+
+      <p class="reveal" style="font-family:var(--font-serif);font-style:italic;color:var(--color-text-light);font-size:15px;margin-bottom:40px;">
+        Kami mengumumkan pernikahan putra-putri kami
+      </p>
+
+      <div class="couple-grid reveal">
+        <!-- Groom -->
+        <div class="couple-card">
+          <div class="couple-photo-wrap">
+            <img src="assets/groom.svg" alt="Foto Mempelai Pria" class="couple-photo left" id="groom-photo">
+            <div class="photo-edit-btn" title="Ganti foto">
+              <svg viewBox="0 0 24 24"><path d="M3 17.25V21h3.75L17.81 9.94l-3.75-3.75L3 17.25zM20.71 7.04c.39-.39.39-1.02 0-1.41l-2.34-2.34c-.39-.39-1.02-.39-1.41 0l-1.83 1.83 3.75 3.75 1.83-1.83z"/></svg>
+            </div>
+          </div>
+          <div class="couple-name" id="ed-groom-name-2">Ahmad</div>
+          <div class="couple-fullname" id="ed-groom-full">Ahmad Fauzi, S.T.</div>
+          <div class="couple-parents" id="ed-groom-parents">Putra pertama dari<br>Bpk. H. Sulaiman &amp; Ibu Hj. Fatimah</div>
+        </div>
+
+        <!-- Heart -->
+        <div class="couple-heart reveal">💖</div>
+
+        <!-- Bride -->
+        <div class="couple-card">
+          <div class="couple-photo-wrap">
+            <img src="assets/bride.svg" alt="Foto Mempelai Wanita" class="couple-photo right" id="bride-photo">
+            <div class="photo-edit-btn" title="Ganti foto">
+              <svg viewBox="0 0 24 24"><path d="M3 17.25V21h3.75L17.81 9.94l-3.75-3.75L3 17.25zM20.71 7.04c.39-.39.39-1.02 0-1.41l-2.34-2.34c-.39-.39-1.02-.39-1.41 0l-1.83 1.83 3.75 3.75 1.83-1.83z"/></svg>
+            </div>
+          </div>
+          <div class="couple-name" id="ed-bride-name-2">Siti</div>
+          <div class="couple-fullname" id="ed-bride-full">Siti Rahayu, S.Pd.</div>
+          <div class="couple-parents" id="ed-bride-parents">Putri kedua dari<br>Bpk. H. Wahyono &amp; Ibu Hj. Mulyani</div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ── COUNTDOWN ─────────────────────────────────── -->
+  <section id="countdown">
+    <div class="container">
+      <p class="section-label reveal">Hitung Mundur</p>
+      <h2 class="countdown-title reveal">Menuju Hari Bahagia</h2>
+      <p class="countdown-subtitle reveal" id="ed-akad-date-2">Senin, 17 Agustus 2026</p>
+
+      <div class="countdown-grid">
+        <div class="countdown-item reveal reveal-delay-1">
+          <span class="countdown-num" id="cd-days">--</span>
+          <span class="countdown-label">Hari</span>
+        </div>
+        <div class="countdown-item reveal reveal-delay-2">
+          <span class="countdown-num" id="cd-hours">--</span>
+          <span class="countdown-label">Jam</span>
+        </div>
+        <div class="countdown-item reveal reveal-delay-3">
+          <span class="countdown-num" id="cd-minutes">--</span>
+          <span class="countdown-label">Menit</span>
+        </div>
+        <div class="countdown-item reveal reveal-delay-4">
+          <span class="countdown-num" id="cd-seconds">--</span>
+          <span class="countdown-label">Detik</span>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ── EVENTS ─────────────────────────────────────── -->
+  <section id="events">
+    <div class="container">
+      <p class="section-label reveal">Rangkaian Acara</p>
+      <h2 class="section-title reveal">Detail Pernikahan</h2>
+      <div class="divider reveal"><span class="divider-icon">🕊️</span></div>
+
+      <div class="events-grid">
+        <!-- Akad Nikah -->
+        <div class="event-card reveal reveal-delay-1">
+          <div class="event-icon-wrap" title="Klik untuk ganti ikon">
+            <img src="assets/akad-icon.svg" alt="Akad" class="event-icon-img" id="event-icon-0">
+            <div class="event-icon-edit-hint">📷</div>
+          </div>
+          <div class="event-type">Akad Nikah</div>
+          <div class="event-name">Ijab &amp; Qabul</div>
+          <div class="event-info">
+            <strong>📅 </strong><span id="ed-akad-date">Senin, 17 Agustus 2026</span><br>
+            <strong>⏰ </strong><span id="ed-akad-time">09.00 WIB — Selesai</span><br>
+            <strong>📍 </strong><span id="ed-akad-place">Masjid Al-Ikhlas</span><br>
+            <span id="ed-akad-address">Jl. Raya Kebenaran No. 1, Kota Jakarta</span>
+          </div>
+        </div>
+
+        <!-- Resepsi -->
+        <div class="event-card reveal reveal-delay-2">
+          <div class="event-icon-wrap" title="Klik untuk ganti ikon">
+            <img src="assets/resepsi-icon.svg" alt="Resepsi" class="event-icon-img" id="event-icon-1">
+            <div class="event-icon-edit-hint">📷</div>
+          </div>
+          <div class="event-type">Resepsi</div>
+          <div class="event-name">Walimatul 'Ursy</div>
+          <div class="event-info">
+            <strong>📅 </strong><span id="ed-resepsi-date">Senin, 17 Agustus 2026</span><br>
+            <strong>⏰ </strong><span id="ed-resepsi-time">11.00 — 15.00 WIB</span><br>
+            <strong>📍 </strong><span id="ed-resepsi-place">Gedung Graha Sari</span><br>
+            <span id="ed-resepsi-address">Jl. Melati No. 28, Kota Jakarta</span>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ── GALLERY ─────────────────────────────────────── -->
+  <section id="gallery">
+    <div class="container">
+      <p class="section-label reveal">Galeri</p>
+      <h2 class="section-title reveal">Momen Berharga</h2>
+      <div class="divider reveal"><span class="divider-icon">💝</span></div>
+    </div>
+
+    <div class="gallery-grid" style="max-width:900px;margin:40px auto 0;padding:0 20px;">
+      <div class="gallery-item reveal" title="Klik untuk ganti foto">
+        <img src="assets/gallery-1.svg" alt="Galeri 1" id="gallery-img-0" loading="lazy">
+        <div class="gallery-overlay"><span class="gallery-edit-label">📷 Ganti Foto</span></div>
+      </div>
+      <div class="gallery-item reveal reveal-delay-1" title="Klik untuk ganti foto">
+        <img src="assets/gallery-2.svg" alt="Galeri 2" id="gallery-img-1" loading="lazy">
+        <div class="gallery-overlay"><span class="gallery-edit-label">📷 Ganti Foto</span></div>
+      </div>
+      <div class="gallery-item reveal reveal-delay-2" title="Klik untuk ganti foto">
+        <img src="assets/gallery-3.svg" alt="Galeri 3" id="gallery-img-2" loading="lazy">
+        <div class="gallery-overlay"><span class="gallery-edit-label">📷 Ganti Foto</span></div>
+      </div>
+      <div class="gallery-item reveal reveal-delay-1" title="Klik untuk ganti foto">
+        <img src="assets/gallery-4.svg" alt="Galeri 4" id="gallery-img-3" loading="lazy">
+        <div class="gallery-overlay"><span class="gallery-edit-label">📷 Ganti Foto</span></div>
+      </div>
+      <div class="gallery-item reveal reveal-delay-2" title="Klik untuk ganti foto">
+        <img src="assets/gallery-5.svg" alt="Galeri 5" id="gallery-img-4" loading="lazy">
+        <div class="gallery-overlay"><span class="gallery-edit-label">📷 Ganti Foto</span></div>
+      </div>
+      <div class="gallery-item reveal reveal-delay-3" title="Klik untuk ganti foto">
+        <img src="assets/gallery-6.svg" alt="Galeri 6" id="gallery-img-5" loading="lazy">
+        <div class="gallery-overlay"><span class="gallery-edit-label">📷 Ganti Foto</span></div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ── MAP ───────────────────────────────────────── -->
+  <section id="map-section">
+    <div class="container">
+      <p class="section-label reveal">Lokasi</p>
+      <h2 class="section-title reveal">Temukan Kami di Sini</h2>
+      <div class="divider reveal"><span class="divider-icon">📍</span></div>
+
+      <div class="map-embed reveal">
+        <iframe
+          id="maps-iframe"
+          src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d126748.54423039296!2d106.7447086!3d-6.2087634!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x2e69f3e945e34b9d%3A0x5371bf0fdad786a2!2sJakarta%2C%20Indonesia!5e0!3m2!1sen!2s!4v1"
+          allowfullscreen=""
+          loading="lazy"
+          referrerpolicy="no-referrer-when-downgrade"
+          title="Lokasi Pernikahan">
+        </iframe>
+      </div>
+
+      <a href="https://goo.gl/maps/example" id="ed-maps-link-btn" class="map-btn reveal" target="_blank" rel="noopener">
+        🗺️ Buka di Google Maps
+      </a>
+    </div>
+  </section>
+
+  <!-- ── RSVP ───────────────────────────────────────── -->
+  <section id="rsvp">
+    <div class="container">
+      <p class="section-label reveal">Konfirmasi</p>
+      <h2 class="section-title reveal">Konfirmasi Kehadiran</h2>
+      <div class="divider reveal"><span class="divider-icon">✉️</span></div>
+      <p class="reveal" style="color:var(--color-text-light);font-size:15px;margin-bottom:0;">
+        Mohon konfirmasi kehadiran Anda agar kami dapat mempersiapkan yang terbaik.
+      </p>
+
+      <form class="rsvp-form reveal" id="rsvp-form" novalidate>
+        <div class="form-group">
+          <label for="rsvp-name">Nama Anda</label>
+          <input type="text" id="rsvp-name" placeholder="Masukkan nama Anda" required autocomplete="name">
+        </div>
+        <div class="form-group">
+          <label for="rsvp-attend">Kehadiran</label>
+          <select id="rsvp-attend">
+            <option value="hadir">✓ Insya Allah Hadir</option>
+            <option value="tidak">✗ Tidak Bisa Hadir</option>
+            <option value="mungkin">? Masih Belum Pasti</option>
+          </select>
+        </div>
+        <div class="form-group">
+          <label for="rsvp-message">Ucapan &amp; Doa</label>
+          <textarea id="rsvp-message" placeholder="Tuliskan ucapan dan doa untuk mempelai..."></textarea>
+        </div>
+        <button type="submit" class="btn-submit">💌 Kirim Konfirmasi</button>
+      </form>
+      <div class="rsvp-success" id="rsvp-success">
+        💖 Terima kasih! Konfirmasi dan ucapan Anda telah kami terima.
+      </div>
+    </div>
+  </section>
+
+  <!-- ── WISHES WALL ───────────────────────────────── -->
+  <section id="wishes">
+    <div class="container">
+      <p class="section-label reveal">Ucapan</p>
+      <h2 class="section-title reveal">Doa &amp; Ucapan</h2>
+      <div class="divider reveal"><span class="divider-icon">🙏</span></div>
+    </div>
+    <div class="wishes-list" id="wishes-list"></div>
+  </section>
+
+</main>
+
+<!-- ═══ FOOTER ════════════════════════════════════════ -->
+<footer>
+  <div>
+    <div class="footer-title">Ahmad &amp; Siti</div>
+    <p class="footer-tagline">Senin, 17 Agustus 2026</p>
+    <span class="footer-heart">💖</span>
+    <p style="font-family:var(--font-serif);font-style:italic;color:rgba(255,255,255,0.8);font-size:16px;margin-bottom:24px;">
+      "Bersatu dalam pernikahan yang penuh berkah,<br>kebahagiaan yang abadi."
+    </p>
+    <p class="footer-copy">Made with ❤️ · Undangan Digital</p>
+  </div>
+</footer>
+
+<script src="js/main.js"></script>
+</body>
+</html>
