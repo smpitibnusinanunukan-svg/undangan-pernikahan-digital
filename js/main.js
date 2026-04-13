@@ -406,9 +406,9 @@ function initRSVP() {
     
     // Save to Supabase if available
     let success = false;
-    if (typeof supabase !== 'undefined') {
+    if (window.sb) {
       try {
-        const { error } = await supabase.from('wishes').insert([wishData]);
+        const { error } = await window.sb.from('wishes').insert([wishData]);
         if (!error) success = true;
       } catch (err) { console.error('Supabase RSVP error', err); }
     }
@@ -439,9 +439,9 @@ async function renderWishes() {
   if (!container) return;
 
   // Try to load from Supabase FIRST
-  if (typeof supabase !== 'undefined') {
+  if (window.sb) {
     try {
-      const { data, error } = await supabase.from('wishes').select('*').order('created_at', { ascending: false });
+      const { data, error } = await window.sb.from('wishes').select('*').order('created_at', { ascending: false });
       if (!error && data) {
         // Replace STATE.wishes with DB data
         STATE.wishes = data.map(dbW => ({
@@ -637,9 +637,9 @@ function loadOpeningBg() {
 
 // ─── Supabase Config Fetcher ───────────────────────────
 async function initSupabaseConfig() {
-  if (typeof supabase === 'undefined') return;
+  if (!window.sb) return;
   try {
-    const { data, error } = await supabase.from('wedding_config').select('*').eq('id', 1).single();
+    const { data, error } = await window.sb.from('wedding_config').select('*').eq('id', 1).single();
     if (!error && data) {
       window.WEDDING_CONFIG = Object.assign({}, window.WEDDING_CONFIG || {}, data);
       console.log('✅ Supabase configuration loaded!');
