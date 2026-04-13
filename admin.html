@@ -12,10 +12,29 @@
 </head>
 <body>
 
+<!-- Supabase Login Overlay -->
+<div id="login-overlay" class="login-overlay">
+  <div class="login-card">
+    <h2 id="login-title">🔒 Login Admin</h2>
+    <form id="admin-login-form">
+      <div class="form-group">
+        <label>Email</label>
+        <input type="email" id="login-email" required placeholder="admin@undangan.com">
+      </div>
+      <div class="form-group">
+        <label>Password</label>
+        <input type="password" id="login-password" required placeholder="••••••••">
+      </div>
+      <button type="submit" class="btn btn-primary" id="login-submit-btn" style="width:100%; margin-top:10px;">Login</button>
+    </form>
+    <div class="login-toggle-auth" id="login-toggle-mode">
+      Belum punya akun? <span>Daftar / Sign Up</span>
+    </div>
+  </div>
+</div>
+
 <!-- Toast Container -->
 <div class="toast-wrap" id="toast-wrap"></div>
-
-<!-- Save Bar -->
 <div class="save-bar" id="save-bar">
   <span>⚠️ Ada perubahan yang belum disimpan</span>
   <div class="save-bar-actions">
@@ -520,21 +539,63 @@ Pak Wahyu 08987654321
         </div>
       </div>
 
-      <!-- VERCEL DEPLOYMENT CONFIG -->
-      <div class="card" style="border-color:var(--c-primary); background:rgba(212,163,115,0.05);">
-        <h3 class="card-title" style="color:var(--c-primary);">🚀 Siap Publish ke Vercel?</h3>
-        <p class="card-desc" style="margin-bottom:12px;">
-          Semua pengaturan Anda saat ini tersimpan di browser Anda (lokal). 
-          Agar tamu undangan lain bisa melihat desain yang sudah Anda buat, Anda harus mengekspor konfigurasi ini.
-        </p>
-        <ol style="font-size:13px;color:var(--c-text);padding-left:18px;margin-bottom:16px;line-height:1.6;">
-          <li>Klik tombol <strong>Download config.js</strong> di bawah.</li>
-          <li>Simpan file yang ter-download tersebut ke folder <strong><code style="background:#eee;padding:2px 4px;border-radius:4px;">js/</code></strong> di folder proyek Anda (menimpa file lama jika ada).</li>
-          <li>Upload semua folder undangan Anda ke GitHub lalu deploy ke Vercel/hosting.</li>
-        </ol>
-        <button class="btn btn-primary" onclick="exportDeploymentConfig()" style="font-weight:600;">
-          📦 Download config.js
-        </button>
+      <!-- MODEL ANIMASI PARTIKEL -->
+      <div class="card">
+        <h3 class="card-title">✨ Model Animasi Partikel</h3>
+        <p class="card-desc">Ubah jenis elemen jatuh di halaman utama (sakura, hati, salju, dll).</p>
+        <div class="form-group">
+          <label>Pilih Model Partikel</label>
+          <select id="settings-particle-model" onchange="localStorage.setItem('wi_particle_model', this.value); if(this.value==='custom'){document.getElementById('settings-particle-custom-wrap').style.display='block'}else{document.getElementById('settings-particle-custom-wrap').style.display='none'}">
+            <option value="sakura">🌸 Sakura (Bawaan)</option>
+            <option value="rose">🌹 Kelopak Mawar</option>
+            <option value="snow">❄️ Salju / Putih</option>
+            <option value="heart">💖 Hati (Cinta)</option>
+            <option value="star">⭐ Bintang</option>
+            <option value="custom">🖼️ Kustom (Gambar Sendiri)</option>
+          </select>
+        </div>
+        <div class="form-group" id="settings-particle-custom-wrap" style="display:none; margin-top:14px; padding-top:14px; border-top:1px dashed var(--c-border);">
+          <label>Unggah Gambar Partikel Sendiri (PNG Transparan)</label>
+          <div style="display:flex;gap:10px;align-items:center;">
+            <input type="file" id="settings-particle-file" accept="image/png, image/svg+xml, image/webp" style="display:none;">
+            <button class="btn btn-ghost" onclick="document.getElementById('settings-particle-file').click()">Pilih Gambar</button>
+            <img id="settings-particle-preview" style="width:30px;height:30px;object-fit:contain;border:1px solid #ddd;border-radius:4px;display:none;">
+          </div>
+        </div>
+      </div>
+
+      <!-- KADO DIGITAL / AMPLOP -->
+      <div class="card">
+        <h3 class="card-title">🎁 Kado Digital / Rekening</h3>
+        <p class="card-desc">Konfigurasi dompet digital atau nomor rekening untuk donasi tamu.</p>
+        <div class="form-group" style="margin-bottom:15px;">
+          <label style="display:flex; align-items:center; gap:8px; cursor:pointer;">
+            <input type="checkbox" id="settings-gift-enable" style="width:auto; transform:scale(1.2);" onchange="localStorage.setItem('wi_gift_enable', this.checked)">
+            <strong style="color:var(--c-text);">Tampilkan Seksi Kado Digital di Undangan</strong>
+          </label>
+        </div>
+        <div id="settings-gift-inputs">
+          <div class="form-group">
+            <label>Nama Bank / E-Wallet</label>
+            <input type="text" id="settings-gift-bank" placeholder="Contoh: BCA / GoPay" oninput="localStorage.setItem('wi_gift_bank', this.value);">
+          </div>
+          <div class="form-group">
+            <label>Nomor Rekening / No HP</label>
+            <input type="text" id="settings-gift-acc" placeholder="1234567890" oninput="localStorage.setItem('wi_gift_acc', this.value);">
+          </div>
+          <div class="form-group">
+            <label>Atas Nama (A.N)</label>
+            <input type="text" id="settings-gift-name" placeholder="Ahmad / Siti" oninput="localStorage.setItem('wi_gift_name', this.value);">
+          </div>
+          <div class="form-group" style="margin-top:14px;">
+            <label>Upload QRIS / QR Code</label>
+            <div style="display:flex;gap:10px;align-items:center;">
+              <input type="file" id="settings-gift-qr-file" accept="image/*" style="display:none;">
+              <button class="btn btn-ghost" onclick="document.getElementById('settings-gift-qr-file').click()">Pilih QR Code</button>
+              <img id="settings-gift-qr-preview" style="height:40px; border-radius:4px; display:none;">
+            </div>
+          </div>
+        </div>
       </div>
 
       <div class="card" style="border-color:rgba(248,113,113,0.25);">
@@ -546,9 +607,29 @@ Pak Wahyu 08987654321
         </div>
       </div>
     </div>
+  </div>
+</div>
 
-  </main>
-</div><!-- /admin-layout -->
+<div id="supabase-login-overlay" class="overlay" style="display:none;">
+  <div class="card" style="max-width:400px;margin:100px auto;">
+    <h3 class="card-title">🔐 Login Supabase</h3>
+    <div class="form-group">
+      <label>Supabase URL</label>
+      <input type="url" id="sb-url" placeholder="https://xyz.supabase.co">
+    </div>
+    <div class="form-group">
+      <label>Anon Key</label>
+      <input type="password" id="sb-key" placeholder="eyJhbGci...">
+    </div>
+    <button class="btn btn-primary" onclick="saveSupabaseConfig()">Simpan & Login</button>
+  </div>
+</div>
+
+<div id="toast-wrap"></div>
+
+<button class="floating-save-btn" id="floating-save-btn" onclick="exportDeploymentConfig()">
+  💾 Simpan Semua Perubahan (Live API)
+</button>
 
 <script src="js/editor.js"></script>
 <script src="js/whatsapp.js"></script>

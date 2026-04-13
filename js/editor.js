@@ -723,6 +723,20 @@ async function exportDeploymentConfig() {
     maps: {
       url: localStorage.getItem('wi_maps_url') || '',
       link: localStorage.getItem('wi_maps_link') || ''
+    },
+    extra: {
+      gift: {
+        enable: localStorage.getItem('wi_gift_enable') === 'true',
+        bank: localStorage.getItem('wi_gift_bank') || '',
+        acc: localStorage.getItem('wi_gift_acc') || '',
+        name: localStorage.getItem('wi_gift_name') || '',
+        qr: localStorage.getItem('wi_gift_qr') || ''
+      },
+      particles: {
+        model: localStorage.getItem('wi_particle_model') || 'sakura',
+        custom_img: localStorage.getItem('wi_particle_custom_img') || ''
+      },
+      countdown_date: localStorage.getItem('wi_countdown_date') || ''
     }
   };
 
@@ -781,8 +795,156 @@ document.addEventListener('DOMContentLoaded', () => {
   buildTextPanel();
   buildImagePanel();
   buildBgPanel();
-  initPetalUploader();
-  initSettingsTab();
+  initUploads();
+  initColorSettings();
+  initParticlesConfig();
+  initGiftConfig();
+});
+
+// ─── INIT PARTICLES CONFIG ─────────────────────────────────────────────
+function initParticlesConfig() {
+  const model = localStorage.getItem('wi_particle_model') || 'sakura';
+  const sel = document.getElementById('settings-particle-model');
+  if (sel) sel.value = model;
+  
+  if (model === 'custom') {
+    document.getElementById('settings-particle-custom-wrap').style.display = 'block';
+  }
+  
+  const customSrc = localStorage.getItem('wi_particle_custom_img');
+  const preview = document.getElementById('settings-particle-preview');
+  if (customSrc && preview) {
+    preview.src = customSrc;
+    preview.style.display = 'block';
+  }
+  
+  const fileInp = document.getElementById('settings-particle-file');
+  if (fileInp) {
+    fileInp.addEventListener('change', (e) => {
+      const file = e.target.files[0];
+      if (!file) return;
+      const reader = new FileReader();
+      reader.onload = (evt) => {
+        localStorage.setItem('wi_particle_custom_img', evt.target.result);
+        if (preview) { preview.src = evt.target.result; preview.style.display = 'block'; }
+        showToast('Gambar partikel disimpan! 🚀', 'success');
+      };
+      reader.readAsDataURL(file);
+    });
+  }
+}
+
+// ─── INIT GIFT CONFIG (Kado Digital) ──────────────────────────────────
+function initGiftConfig() {
+  const enableInp = document.getElementById('settings-gift-enable');
+  if (enableInp) enableInp.checked = localStorage.getItem('wi_gift_enable') === 'true';
+  
+  const bInp = document.getElementById('settings-gift-bank');
+  if (bInp) bInp.value = localStorage.getItem('wi_gift_bank') || '';
+  
+  const aInp = document.getElementById('settings-gift-acc');
+  if (aInp) aInp.value = localStorage.getItem('wi_gift_acc') || '';
+  
+  const nInp = document.getElementById('settings-gift-name');
+  if (nInp) nInp.value = localStorage.getItem('wi_gift_name') || '';
+
+  const qrSrc = localStorage.getItem('wi_gift_qr');
+  const preview = document.getElementById('settings-gift-qr-preview');
+  if (qrSrc && preview) {
+    preview.src = qrSrc;
+    preview.style.display = 'block';
+  }
+
+  const fileInp = document.getElementById('settings-gift-qr-file');
+  if (fileInp) {
+    fileInp.addEventListener('change', (e) => {
+      const file = e.target.files[0];
+      if (!file) return;
+      const reader = new FileReader();
+      reader.onload = (evt) => {
+        localStorage.setItem('wi_gift_qr', evt.target.result);
+        if (preview) { preview.src = evt.target.result; preview.style.display = 'block'; }
+        showToast('QR Code Hadiah disimpan! 🚀', 'success');
+      };
+      reader.readAsDataURL(file);
+    });
+  }
+}
+
+/* ───────────────────────────────────────────────────────
+   SUPABASE AUTHENTICATION
+─────────────────────────────────────────────────────── */
+let isSignUpMode = false;
+
+document.addEventListener('DOMContentLoaded', () => {
+  if (typeof supabase === 'undefined') return;
+
+  const loginOverlay = document.getElementById('login-overlay');
+  const loginForm = document.getElementById('admin-login-form');
+  const loginToggle = document.getElementById('login-toggle-mode');
+  const loginTitle = document.getElementById('login-title');
+  const loginBtn = document.getElementById('login-submit-btn');
+
+  // Check current session
+  supabase.auth.getSession().then(({ data: { session } }) => {
+    if (session) {
+      if (loginOverlay) loginOverlay.classList.add('hidden');
+    } else {
+      if (loginOverlay) loginOverlay.classList.remove('hidden');
+    }
+  });
+
+  supabase.auth.onAuthStateChange((event, session) => {
+    if (session) {
+      if (loginOverlay) loginOverlay.classList.add('hidden');
+    } else {
+      if (loginOverlay) loginOverlay.classList.remove('hidden');
+    }
+  });
+
+  if (loginToggle) {
+    loginToggle.addEventListener('click', () => {
+      isSignUpMode = !isSignUpMode;
+      if (isSignUpMode) {
+        loginTitle.textContent = '📝 Daftar Admin Baru';
+        loginBtn.textContent = 'Sign Up';
+        loginToggle.innerHTML = 'Sudah punya akun? <span>Login di sini</span>';
+      } else {
+        loginTitle.textContent = '🔒 Login Admin';
+        loginBtn.textContent = 'Login';
+        loginToggle.innerHTML = 'Belum punya akun? <span>Daftar / Sign Up</span>';
+      }
+    });
+  }
+
+  if (loginForm) {
+    loginForm.addEventListener('submit', async (e) => {
+      e.preventDefault();
+      const email = document.getElementById('login-email').value;
+      const password = document.getElementById('login-password').value;
+      
+      loginBtn.disabled = true;
+      loginBtn.textContent = 'Loading...';
+
+      if (isSignUpMode) {
+        const { error } = await supabase.auth.signUp({ email, password });
+        if (error) {
+          alert('Error Sign Up: ' + error.message);
+        } else {
+          alert('Pendaftaran berhasil! Jika perlu verifikasi email, silakan cek email Anda. Jika tidak, Anda akan langsung login.');
+        }
+      } else {
+        const { error } = await supabase.auth.signInWithPassword({ email, password });
+        if (error) {
+          alert('Error Login: ' + error.message);
+        }
+      }
+      
+      loginBtn.disabled = false;
+      loginBtn.textContent = isSignUpMode ? 'Sign Up' : 'Login';
+    });
+  }
+});
 
   // 3. Wire up helpers
   initSaveBar();

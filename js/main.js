@@ -205,52 +205,55 @@ function startPetals() {
   if (!canvas) return;
   const ctx = canvas.getContext('2d');
 
-  function resize() {
-    canvas.width  = window.innerWidth;
-    canvas.height = window.innerHeight;
-  }
+  function resize() { canvas.width = window.innerWidth; canvas.height = window.innerHeight; }
   resize();
   window.addEventListener('resize', resize);
 
   const PETAL_COUNT = 35;
   const petals = [];
 
-  // Petal images / shape keys stored in localStorage
-  const petalImgSrc = localStorage.getItem('wi_petal_image') || null;
-  let petalImg = null;
-  if (petalImgSrc) {
-    petalImg = new Image();
-    petalImg.src = petalImgSrc;
+  // Get config from DB or LocalStorage
+  let modelStr = localStorage.getItem('wi_particle_model') || 'sakura';
+  let customImgStr = localStorage.getItem('wi_particle_custom_img') || null;
+  
+  if (window.WEDDING_CONFIG && window.WEDDING_CONFIG.extra && window.WEDDING_CONFIG.extra.particles) {
+    if (!localStorage.getItem('wi_particle_model')) {
+      modelStr = window.WEDDING_CONFIG.extra.particles.model || 'sakura';
+      customImgStr = window.WEDDING_CONFIG.extra.particles.custom_img || null;
+    }
   }
 
-  // CSSVar color for petal color
-  const colors = [
+  let customImgObj = null;
+  if (modelStr === 'custom' && customImgStr) {
+    customImgObj = new Image();
+    customImgObj.src = customImgStr;
+  }
+
+  const baseColors = [
     getComputedStyle(document.documentElement).getPropertyValue('--color-primary').trim() || '#b5838d',
     getComputedStyle(document.documentElement).getPropertyValue('--color-secondary').trim() || '#e8c4c4',
     getComputedStyle(document.documentElement).getPropertyValue('--color-accent').trim() || '#d4a5a5',
-    getComputedStyle(document.documentElement).getPropertyValue('--color-gold').trim() || '#c9a96e',
+    '#ffffff'
   ];
 
   function mkPetal() {
     return {
       x: Math.random() * canvas.width,
       y: -20,
-      size: 8 + Math.random() * 14,
-      speedY: 1.2 + Math.random() * 2,
+      size: (modelStr === 'snow' ? 4 : 8) + Math.random() * (modelStr === 'snow' ? 6 : 14),
+      speedY: (modelStr === 'snow' ? 0.8 : 1.2) + Math.random() * 2,
       speedX: (Math.random() - 0.5) * 1.5,
       rot: Math.random() * Math.PI * 2,
       rotSpeed: (Math.random() - 0.5) * 0.08,
-      opacity: 0.5 + Math.random() * 0.5,
-      color: colors[Math.floor(Math.random() * colors.length)],
+      opacity: 0.4 + Math.random() * 0.6,
+      color: modelStr === 'snow' ? '#ffffff' : baseColors[Math.floor(Math.random() * baseColors.length)],
       swing: Math.random() * Math.PI * 2,
       swingSpeed: 0.02 + Math.random() * 0.02,
     };
   }
 
   for (let i = 0; i < PETAL_COUNT; i++) {
-    const p = mkPetal();
-    p.y = Math.random() * window.innerHeight; // pre-scatter
-    petals.push(p);
+    const p = mkPetal(); p.y = Math.random() * window.innerHeight; petals.push(p);
   }
 
   function drawPetal(p) {
@@ -258,15 +261,32 @@ function startPetals() {
     ctx.globalAlpha = p.opacity;
     ctx.translate(p.x, p.y);
     ctx.rotate(p.rot);
+    ctx.fillStyle = p.color;
 
-    if (petalImg && petalImg.complete) {
-      ctx.drawImage(petalImg, -p.size / 2, -p.size / 2, p.size, p.size);
-    } else {
-      // Draw a simple petal shape
+    if (modelStr === 'custom' && customImgObj && customImgObj.complete) {
+      ctx.drawImage(customImgObj, -p.size / 2, -p.size / 2, p.size, p.size);
+    } else if (modelStr === 'heart') {
       ctx.beginPath();
-      ctx.ellipse(0, 0, p.size / 2, p.size / 3.5, 0, 0, Math.PI * 2);
-      ctx.fillStyle = p.color;
+      const topCurveHeight = p.size * 0.3;
+      ctx.moveTo(0, topCurveHeight);
+      ctx.bezierCurveTo(0, 0, -p.size / 2, 0, -p.size / 2, topCurveHeight);
+      ctx.bezierCurveTo(-p.size / 2, p.size * 0.6, 0, p.size * 0.8, 0, p.size);
+      ctx.bezierCurveTo(0, p.size * 0.8, p.size / 2, p.size * 0.6, p.size / 2, topCurveHeight);
+      ctx.bezierCurveTo(p.size / 2, 0, 0, 0, 0, topCurveHeight);
       ctx.fill();
+    } else if (modelStr === 'star') {
+      ctx.beginPath();
+      for (let i = 0; i < 5; i++) {
+        ctx.lineTo(Math.cos((18 + i * 72) / 180 * Math.PI) * p.size, -Math.sin((18 + i * 72) / 180 * Math.PI) * p.size);
+        ctx.lineTo(Math.cos((54 + i * 72) / 180 * Math.PI) * (p.size * 0.4), -Math.sin((54 + i * 72) / 180 * Math.PI) * (p.size * 0.4));
+      }
+      ctx.closePath();
+      ctx.fill();
+    } else if (modelStr === 'snow') {
+      ctx.beginPath(); ctx.arc(0, 0, p.size / 2, 0, Math.PI * 2); ctx.fill();
+    } else {
+      // default: sakura or rose (ellipse)
+      ctx.beginPath(); ctx.ellipse(0, 0, p.size / 2, p.size / 3.5, 0, 0, Math.PI * 2); ctx.fill();
     }
     ctx.restore();
   }
@@ -627,6 +647,47 @@ async function initSupabaseConfig() {
   } catch (err) { console.error('Error fetching config from DB', err); }
 }
 
+// ─── Kado Digital Linker ────────────────────────────────
+function loadGiftConfig() {
+  const wrap = document.getElementById('digital-gift');
+  if (!wrap) return;
+
+  let enableStr = localStorage.getItem('wi_gift_enable');
+  let bankStr   = localStorage.getItem('wi_gift_bank') || '';
+  let accStr    = localStorage.getItem('wi_gift_acc')  || '';
+  let nameStr   = localStorage.getItem('wi_gift_name') || '';
+  let qrStr     = localStorage.getItem('wi_gift_qr')   || '';
+
+  if (window.WEDDING_CONFIG && window.WEDDING_CONFIG.extra && window.WEDDING_CONFIG.extra.gift) {
+    if (!localStorage.getItem('wi_gift_enable')) enableStr = window.WEDDING_CONFIG.extra.gift.enable ? 'true' : 'false';
+    if (!localStorage.getItem('wi_gift_bank')) bankStr = window.WEDDING_CONFIG.extra.gift.bank || '';
+    if (!localStorage.getItem('wi_gift_acc')) accStr = window.WEDDING_CONFIG.extra.gift.acc || '';
+    if (!localStorage.getItem('wi_gift_name')) nameStr = window.WEDDING_CONFIG.extra.gift.name || '';
+    if (!localStorage.getItem('wi_gift_qr')) qrStr = window.WEDDING_CONFIG.extra.gift.qr || '';
+  }
+
+  if (enableStr === 'true') {
+    wrap.style.display = 'block';
+    
+    const dbank = document.getElementById('pg-gift-bank');
+    const dacc  = document.getElementById('pg-gift-acc');
+    const dname = document.getElementById('pg-gift-name');
+    const dqrwrap = document.getElementById('pg-gift-qr-wrap');
+    const dqrimg  = document.getElementById('pg-gift-qr');
+
+    if (dbank) dbank.textContent = bankStr || 'Bank';
+    if (dacc) dacc.textContent = accStr || '-';
+    if (dname) dname.textContent = nameStr || '-';
+    
+    if (qrStr && dqrimg && dqrwrap) {
+      dqrimg.src = qrStr;
+      dqrwrap.style.display = 'block';
+    }
+  } else {
+    wrap.style.display = 'none';
+  }
+}
+
 // ─── Init All ─────────────────────────────────────────
 window.addEventListener('DOMContentLoaded', async () => {
   // Tunggu konfigurasi dari Supabase jika ada sebelum merender tampilan
@@ -635,6 +696,7 @@ window.addEventListener('DOMContentLoaded', async () => {
   loadSettings();
   loadGuestName();
   loadOpeningBg();
+  loadGiftConfig();
   initOpening();
   initScrollReveal();
   initRSVP();
