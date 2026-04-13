@@ -796,8 +796,8 @@ document.addEventListener('DOMContentLoaded', () => {
   buildTextPanel();
   buildImagePanel();
   buildBgPanel();
-  initUploads();
-  initColorSettings();
+  initPetalUploader();
+  initSettingsTab();
   initParticlesConfig();
   initGiftConfig();
 
