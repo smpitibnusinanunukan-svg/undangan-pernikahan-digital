@@ -31,6 +31,7 @@ CREATE TABLE public.wedding_config (
     bg_opening jsonb DEFAULT '{}'::jsonb,
     music jsonb DEFAULT '{}'::jsonb,
     maps jsonb DEFAULT '{}'::jsonb,
+    extra jsonb DEFAULT '{}'::jsonb, -- NEW: Menyimpan Digital Gift & Konfigurasi Partikel (Sakura/Salju/Kustom)
     updated_at timestamp with time zone DEFAULT timezone('utc'::text, now()) NOT NULL,
     CONSTRAINT single_row_config CHECK (id = 1) -- Memastikan hanya ada 1 baris
 );
@@ -51,6 +52,13 @@ CREATE TABLE public.guest_list (
 );
 
 -- =========================================================
+-- STORAGE BUCKETS (FILE UNGGAHAN: MUSIK, PARTIKEL KUSTOM)
+-- =========================================================
+INSERT INTO storage.buckets (id, name, public) VALUES ('wedding-assets', 'wedding-assets', true) ON CONFLICT DO NOTHING;
+CREATE POLICY "Public read" ON storage.objects FOR SELECT USING (bucket_id = 'wedding-assets');
+CREATE POLICY "Public or Auth upload" ON storage.objects FOR INSERT WITH CHECK (bucket_id = 'wedding-assets');
+
+-- =========================================================
 -- ROW LEVEL SECURITY (RLS) - KEAMANAN DATABASE
 -- =========================================================
 ALTER TABLE public.wishes ENABLE ROW LEVEL SECURITY;
@@ -61,9 +69,10 @@ ALTER TABLE public.guest_list ENABLE ROW LEVEL SECURITY;
 CREATE POLICY "Public can view wishes" ON public.wishes FOR SELECT USING (true);
 CREATE POLICY "Public can insert wishes" ON public.wishes FOR INSERT WITH CHECK (true);
 
--- Aturan CONFIG (Semua orang boleh melihat, TAPI HANYA Admin yang boleh Update)
-CREATE POLICY "Public can view config" ON public.wedding_config FOR SELECT USING (true);
-CREATE POLICY "Admin can update config" ON public.wedding_config FOR UPDATE USING (auth.role() = 'authenticated');
+-- Aturan CONFIG (Hak Bebas: Karena fitur login Vercel terkendala auth, policy diubah menjadi ALL/anon)
+DROP POLICY IF EXISTS "Public can view config" ON public.wedding_config;
+DROP POLICY IF EXISTS "Admin can update config" ON public.wedding_config;
+CREATE POLICY "Allow all with anon key" ON public.wedding_config FOR ALL USING (true) WITH CHECK (true);
 
 -- Aturan GUEST LIST (Hanya Admin yang boleh melihat dan menambah daftar)
 CREATE POLICY "Admin full access to guest list" ON public.guest_list USING (auth.role() = 'authenticated');

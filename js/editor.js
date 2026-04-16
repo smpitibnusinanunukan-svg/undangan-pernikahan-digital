@@ -87,23 +87,49 @@ const TEXT_DEFS = [
   { id: 'ed-bride-name',      label: 'Nama Mempelai Wanita (Script)',        group: 'Mempelai' },
   { id: 'ed-groom-full',      label: 'Nama Lengkap Pria (+ gelar)',          group: 'Mempelai' },
   { id: 'ed-bride-full',      label: 'Nama Lengkap Wanita (+ gelar)',        group: 'Mempelai' },
+  { id: 'ed-title-sect-couple',label:'Kategori (cth: Mempelai)',             group: 'Mempelai' },
+  { id: 'ed-title-couple',    label: 'Judul Pengumuman',                     group: 'Mempelai' },
+  { id: 'ed-subtitle-couple', label: 'Teks Pengumuman Pasangan',             group: 'Mempelai', multi: true },
   { id: 'ed-groom-parents',   label: 'Orang Tua Mempelai Pria',              group: 'Mempelai', multi: true },
   { id: 'ed-bride-parents',   label: 'Orang Tua Mempelai Wanita',            group: 'Mempelai', multi: true },
+  
   { id: 'ed-event-date',      label: 'Tahun (kotak tanggal hero)',            group: 'Tanggal & Waktu' },
   { id: 'ed-countdown-date',  label: 'Tanggal Countdown (YYYY-MM-DD)',       group: 'Tanggal & Waktu', type: 'date' },
+  
+  { id: 'ed-title-sect-countdown',label:'Kategori (cth: Hitung Mundur)',     group: 'Tanggal & Waktu' },
+  { id: 'ed-title-countdown', label: 'Judul Waktu Mundur',                   group: 'Tanggal & Waktu' },
+  
+  { id: 'ed-title-sect-events',label:'Kategori (cth: Rangkaian Acara)',      group: 'Acara' },
+  { id: 'ed-title-events',    label: 'Judul Deskripsi Acara',                group: 'Acara' },
+  { id: 'ed-event-type-1',    label: 'Nama Acara 1',                         group: 'Acara' },
+  { id: 'ed-event-name-1',    label: 'Sub Nama Acara 1',                     group: 'Acara' },
   { id: 'ed-akad-date',       label: 'Tanggal Akad Nikah',                   group: 'Acara' },
   { id: 'ed-akad-time',       label: 'Jam Akad Nikah',                       group: 'Acara' },
   { id: 'ed-akad-place',      label: 'Nama Tempat Akad',                     group: 'Acara' },
   { id: 'ed-akad-address',    label: 'Alamat Akad',                          group: 'Acara', multi: true },
+  { id: 'ed-event-type-2',    label: 'Nama Acara 2',                         group: 'Acara' },
+  { id: 'ed-event-name-2',    label: 'Sub Nama Acara 2',                     group: 'Acara' },
   { id: 'ed-resepsi-date',    label: 'Tanggal Resepsi',                      group: 'Acara' },
   { id: 'ed-resepsi-time',    label: 'Jam Resepsi',                          group: 'Acara' },
   { id: 'ed-resepsi-place',   label: 'Nama Tempat Resepsi',                  group: 'Acara' },
   { id: 'ed-resepsi-address', label: 'Alamat Resepsi',                       group: 'Acara', multi: true },
-  { id: 'ed-quote',           label: 'Kutipan Ayat / Pesan Utama',           group: 'Konten', multi: true },
-  { id: 'ed-quote-source',    label: 'Sumber Kutipan',                       group: 'Konten' },
-  { id: 'ed-tagline',         label: 'Tagline di bawah nama (hero)',         group: 'Konten' },
-  { id: 'ed-maps-url',        label: 'Google Maps Embed URL (src iframe)',   group: 'Lokasi', type: 'url' },
-  { id: 'ed-maps-link',       label: 'Link "Buka di Google Maps"',           group: 'Lokasi', type: 'url' },
+  
+  { id: 'ed-title-sect-gallery',label:'Kategori (cth: Galeri)',              group: 'Galeri & Lokasi' },
+  { id: 'ed-title-gallery',   label: 'Judul Galeri',                         group: 'Galeri & Lokasi' },
+  { id: 'ed-title-sect-map',  label: 'Kategori (cth: Lokasi)',               group: 'Galeri & Lokasi' },
+  { id: 'ed-title-map',       label: 'Judul Lokasi Map',                     group: 'Galeri & Lokasi' },
+  { id: 'ed-maps-url',        label: 'Google Maps Embed URL (if src)',       group: 'Galeri & Lokasi', type: 'url' },
+  { id: 'ed-maps-link',       label: 'Link Tujuan (Klik Buka Maps)',         group: 'Galeri & Lokasi', type: 'url' },
+  
+  { id: 'ed-title-sect-rsvp', label: 'Kategori (cth: Konfirmasi)',           group: 'Buku Tamu' },
+  { id: 'ed-title-rsvp',      label: 'Judul Form RSVP',                      group: 'Buku Tamu' },
+  { id: 'ed-subtitle-rsvp',   label: 'Sub-judul Bawah Form RSVP',            group: 'Buku Tamu', multi: true },
+  { id: 'ed-title-sect-wishes',label:'Kategori (cth: Ucapan)',               group: 'Buku Tamu' },
+  { id: 'ed-title-wishes',    label: 'Judul List Doa',                       group: 'Buku Tamu' },
+  
+  { id: 'ed-quote',           label: 'Kutipan Ayat / Pesan Utama',           group: 'Konten Footer', multi: true },
+  { id: 'ed-quote-source',    label: 'Sumber Kutipan',                       group: 'Konten Footer' },
+  { id: 'ed-tagline',         label: 'Tagline di bawah hero',                group: 'Konten Footer' },
 ];
 
 /* ───────────────────────────────────────────────────────
@@ -754,6 +780,26 @@ function resetWishes() {
    DEPLOYMENT CONFIG EXPORT (Now Pushes to Supabase)
 ─────────────────────────────────────────────────────── */
 async function exportDeploymentConfig() {
+  // Sync current form values → localStorage before building payload
+  const cdEl = document.getElementById('settings-countdown-date');
+  if (cdEl && cdEl.value) localStorage.setItem('wi_countdown_date', cdEl.value);
+  const muEl = document.getElementById('settings-maps-embed');
+  if (muEl && muEl.value) localStorage.setItem('wi_maps_url', muEl.value);
+  const mlEl = document.getElementById('settings-maps-link');
+  if (mlEl && mlEl.value) localStorage.setItem('wi_maps_link', mlEl.value);
+  const apEl = document.getElementById('settings-music-autoplay');
+  if (apEl) localStorage.setItem('wi_music_autoplay', apEl.checked.toString());
+  const gbEl = document.getElementById('settings-gift-bank');
+  if (gbEl) localStorage.setItem('wi_gift_bank', gbEl.value);
+  const gaEl = document.getElementById('settings-gift-acc');
+  if (gaEl) localStorage.setItem('wi_gift_acc', gaEl.value);
+  const gnEl = document.getElementById('settings-gift-name');
+  if (gnEl) localStorage.setItem('wi_gift_name', gnEl.value);
+  const geEl = document.getElementById('settings-gift-enable');
+  if (geEl) localStorage.setItem('wi_gift_enable', geEl.checked.toString());
+  const pmEl = document.getElementById('settings-particle-model');
+  if (pmEl) localStorage.setItem('wi_particle_model', pmEl.value);
+
   const payload = {
     id: 1, // enforce single row
     colors: JSON.parse(localStorage.getItem('wi_colors') || '{}'),

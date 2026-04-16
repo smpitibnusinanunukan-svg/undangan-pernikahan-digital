@@ -69,7 +69,8 @@ function loadSettings() {
   }
   // Apply all texts to matching IDs (broader sync)
   const dupMap = {
-    'ed-akad-date':    ['ed-akad-date-2'],
+    'ed-akad-date':    ['ed-akad-date-2', 'ed-akad-date-3'],
+    'ed-quote':        ['ed-footer-quote'],
   };
   Object.entries(dupMap).forEach(([src, targets]) => {
     if (texts[src]) {
@@ -284,6 +285,18 @@ function startPetals() {
       ctx.fill();
     } else if (modelStr === 'snow') {
       ctx.beginPath(); ctx.arc(0, 0, p.size / 2, 0, Math.PI * 2); ctx.fill();
+    } else if (modelStr === 'leaf' || modelStr === 'butterfly' || modelStr === 'balloon') {
+      const emoji = modelStr === 'butterfly' ? '🦋' : (modelStr === 'balloon' ? '🎈' : '🍂');
+      ctx.font = `${Math.max(12, p.size * 2)}px sans-serif`;
+      ctx.textAlign = 'center';
+      ctx.textBaseline = 'middle';
+      ctx.fillText(emoji, 0, 0);
+    } else if (modelStr === 'glow') {
+      const grad = ctx.createRadialGradient(0, 0, 0, 0, 0, p.size);
+      grad.addColorStop(0, p.color);
+      grad.addColorStop(1, 'transparent');
+      ctx.fillStyle = grad;
+      ctx.beginPath(); ctx.arc(0, 0, p.size, 0, Math.PI * 2); ctx.fill();
     } else {
       // default: sakura or rose (ellipse)
       ctx.beginPath(); ctx.ellipse(0, 0, p.size / 2, p.size / 3.5, 0, 0, Math.PI * 2); ctx.fill();
@@ -311,6 +324,40 @@ function startPetals() {
 
 // ─── Countdown Timer ─────────────────────────────────────
 function startCountdown() {
+  // Priority: localStorage → DB config → default
+  let countdownDate = localStorage.getItem('wi_countdown_date');
+  if (!countdownDate && window.WEDDING_CONFIG && window.WEDDING_CONFIG.extra && window.WEDDING_CONFIG.extra.countdown_date) {
+    countdownDate = window.WEDDING_CONFIG.extra.countdown_date;
+  }
+  if (countdownDate) {
+    STATE.countdownTarget = new Date(countdownDate);
+  }
+
+  // Parse target date and update hero date elements
+  const targetObj = STATE.countdownTarget || new Date('2026-08-17T09:00:00');
+  const dNum = document.getElementById('ed-hero-date-num');
+  const dMonth = document.getElementById('ed-hero-date-month');
+  const dYear = document.getElementById('ed-event-date');
+  const dTimeNum = document.getElementById('ed-hero-date-time-num');
+  const dTimeLabel = document.getElementById('ed-hero-date-time-label');
+
+  if (dNum) dNum.textContent = String(targetObj.getDate()).padStart(2, '0');
+  if (dYear) dYear.textContent = targetObj.getFullYear();
+  if (dTimeNum) {
+    let ht = targetObj.getHours();
+    if (dTimeLabel) {
+      if (ht < 10) dTimeLabel.textContent = 'Pagi';
+      else if (ht < 15) dTimeLabel.textContent = 'Siang';
+      else if (ht < 18) dTimeLabel.textContent = 'Sore';
+      else dTimeLabel.textContent = 'Malam';
+    }
+    dTimeNum.textContent = String(ht).padStart(2, '0');
+  }
+  if (dMonth) {
+    const months = ['Januari','Februari','Maret','April','Mei','Juni','Juli','Agustus','September','Oktober','November','Desember'];
+    dMonth.textContent = months[targetObj.getMonth()];
+  }
+
   function update() {
     const target = STATE.countdownTarget || new Date('2026-08-17T09:00:00');
     const now    = new Date();
