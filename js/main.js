@@ -749,10 +749,6 @@ window.addEventListener('DOMContentLoaded', async () => {
   initRSVP();
   await renderWishes();
   initMusic();
-  initGalleryUploads();
-  initEventIconUploads();
-  initHeroPhotoUpload();
-  initCouplePhotoUploads();
   startCountdown();
 
   // Sync extra page fields
